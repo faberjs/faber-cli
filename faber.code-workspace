@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"name": "faber",
+			"path": "."
+		}
+	],
+	"settings": {
+		// Enable formating when saving files
+		"editor.formatOnSave": true,
+		// Change default code formatter to Prettier
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+	}
+}

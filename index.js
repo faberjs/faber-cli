@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+// Libraries
 const colors = require('colors');
 const commander = require('commander');
+const consolidate = require('consolidate');
 const inquirer = require('inquirer');
 const ora = require('ora');
 const del = require('del');
@@ -11,9 +13,11 @@ const argv = require('minimist')(process.argv.slice(2));
 const Liftoff = require('liftoff');
 //const v8flags = require('v8flags');
 
-const faberCmds = ['update', 'help'];
+// Utils
+const log = require('./utils/log');
 
-// Create faber instance
+// Config and definitions
+const faberCmds = ['update', 'help'];
 const faberCli = new Liftoff({
 	name: 'faber',
 	moduleName: 'faber-cli',
@@ -24,8 +28,6 @@ const faberCli = new Liftoff({
 	},
 	v8flags: ['--harmony'],
 });
-
-// Init CLI
 faberCli.launch(
 	{
 		cwd: argv.cwd,
@@ -33,8 +35,8 @@ faberCli.launch(
 	init
 );
 
-// Execute task with given context
-function init(context, arg) {
+// Execute task with given env
+function init(env) {
 	// VERSION command
 	const package = require('./package.json');
 	commander.version(package.version);
@@ -58,97 +60,84 @@ function init(context, arg) {
 
 	// CUSTOM commands
 	if (faberCmds.indexOf(argv._[0]) === -1) {
-		if (!context.configPath) {
+		if (!env.configPath) {
 			// log(colors.red(`${argv._[0].cyan} command not recognized.`));
 			// log(`Use ${'faber help'.yellow} to check the available commands`);
-			log(colors.yellow(`Config file not found at ${context.cwd.magenta}`));
+			log(colors.yellow(`Config file not found at ${env.cwd.magenta}`));
 		} else {
-			const rcFile = require(context.configPath);
+			const rcFile = require(env.configPath);
 			Object.entries(rcFile).forEach(([task, config]) => {
+				// Build command structure
+				let command = `${task}`;
+				if (config.hasOwnProperty('args')) {
+					config.args.forEach((arg) => {
+						command += arg.charAt(arg.length - 1) === '?' ? ` [${arg}]` : ` <${arg}>`;
+					});
+				}
+
+				// Register custom command
 				commander
-					.command(config.hasOwnProperty('argument') ? `${task} <${config.argument}>` : `${task}`)
+					.command(command)
 					.description(config.hasOwnProperty('description') ? config.description : '')
-					.action(async (action) => {
-						if (config.hasOwnProperty('argument')) {
+					.action(async () => {
+						let context = { teste: 'TESTE-AQUI' };
+
+						// Identify args
+						if (config.hasOwnProperty('args')) {
+							config.args.forEach((arg, i) => {
+								context[arg.replace(/\?$/, '')] =
+									argv._.length > i + 1 ? argv._[i + 1] : undefined;
+							});
+						}
+
+						// Run filter function to customize context data
+						if (config.hasOwnProperty('filter')) {
+							config.filter(context);
+						}
+
+						// Set default template engine when not defined
+						config.files.forEach((file) => {
+							file.compiler = file.hasOwnProperty('compiler')
+								? file.compiler
+								: config.compilers[0];
+						});
+
+						//console.log(config.files);
+						//process.exit();
+
+						// Compile and write files
+						for (const engine of config.compilers) {
+							for (const file of config.files.filter((file) => file.compiler === engine)) {
+								try {
+									console.log('CONTEXTO', context);
+									const result = await consolidate[engine](file.template, context);
+									console.log(`Compiled using ${engine}`.green);
+									console.log(result);
+								} catch (err) {
+									throw err;
+								}
+							}
+						}
+
+						/* if (config.hasOwnProperty('args')) {
 							console.log(
-								`${colors.green('[OK]')} Faber new task: ${colors.cyan(task)}; with args: ${colors.cyan(
-									action
-								)};`
+								`${colors.green('[OK]')} Faber new task: ${colors.cyan(
+									task
+								)}; with args`
 							);
 						} else {
-							console.log(`${colors.green('[OK]')} Faber new task: ${colors.cyan(task)}; with no args;`);
-						}
+							console.log(
+								`${colors.green('[OK]')} Faber new task: ${colors.cyan(
+									task
+								)}; with no args;`
+							);
+						} */
 					});
 			});
+
+			//console.log(commander);
 		}
 	}
 
 	commander.parse(process.argv);
 }
-
-const log = function (message = '') {
-	console.log(`[${colors.gray('Faber')}] ${message}`);
-};
-
-// let spinner;
-
-// //console.log(process.argv);
-
-// // UPDATE command
-// commander
-// 	.command('update')
-// 	.description('Updates Faber CLI to the latest version')
-// 	.action(async () => {
-// 		console.log(process.argv)
-// 	});
-
-// // HELP command
-// commander
-// 	.command('help')
-// 	.description('Show available tasks')
-// 	.action(async () => {
-// 		console.log(colors.green('TODO: build intetesting display of available tasks'));
-// 		return;
-// 	});
-
-// // CUSTOM commands
-// const rcFilePath = `${process.cwd()}/faberrc.js`;
-// if(fs.existsSync(rcFilePath)) {
-// 	const rcFile = require(rcFilePath);
-
-// 	// Check for valid config
-// 	if( ! verifyConfigFile(rcFile) ) {
-// 		return;
-// 	}
-
-// 	Object.entries(rcFile).forEach(([task, config]) => {
-// 		commander
-// 			.command( config.hasOwnProperty('arg') ? `${task} <${config.arg}>` : `${task}` )
-// 			.description( config.hasOwnProperty('description') ? config.description : '' )
-// 			.action( async (action) => {
-// 				if(config.hasOwnProperty('arg')) {
-// 					console.log(`${colors.green('[OK]')} Faber new task: ${colors.cyan(task)}; with args: ${colors.cyan(action)};`);
-// 				} else {
-// 					console.log(`${colors.green('[OK]')} Faber new task: ${colors.cyan(task)}; with no args;`);
-// 				}
-// 			});
-// 	});
-// } else {
-// 	console.log(colors.red(`Configuration file not found in th current folder (${rcFile}).`));
-// 	return;
-// }
-
-// /**
-//  * Check if the configuration file has a valid content
-//  * @param {object} rcFile Content of the config file
-//  */
-// function verifyConfigFile(rcFile) {
-// 	if(typeof rcFile === 'object') {
-// 		return true;
-// 	} else {
-// 		console.log(colors.red(`Configuration file doesn't seem to be valid.`));
-// 		return false;
-// 	}
-// }
-
-// commander.parse(process.argv);

@@ -67,19 +67,20 @@ async function init(env) {
 					const config = rcFile.tasks[cmd];
 					config.command = cmd;
 					config.args = config.hasOwnProperty('args') ? Object.entries(config.args) : [];
+					config.options = config.hasOwnProperty('options')
+						? Object.entries(config.options)
+						: [];
 					config.usage = getCommandUsage(config);
 
 					// Placeholder for caching tested directories
 					env.existingPaths = [];
 
-					// console.log(cmd, config);
-
-					let context = { teste: 'TESTE-AQUI' };
+					let data = {};
 
 					// Identify args
 					config.args.forEach(([arg, isRequired], i) => {
-						context[arg] = argv._.length > i + 1 ? argv._[i + 1] : undefined;
-						if (isRequired && context[arg] === undefined) {
+						data[arg] = argv._.length > i + 1 ? argv._[i + 1] : undefined;
+						if (isRequired && data[arg] === undefined) {
 							log(
 								`${'Invalid command:'.red.bold} \n\t  Required argument ${
 									`<${arg}>`.magenta.bold
@@ -90,9 +91,33 @@ async function init(env) {
 						}
 					});
 
-					// Run filter function to customize context data
-					if (config.hasOwnProperty('filterContext')) {
-						config.filterContext(context);
+					// Identify options
+					config.options.forEach(([option, aliases], i) => {
+						data[option] = argv.hasOwnProperty(option) ? argv[option] : undefined;
+						if (data[option] === undefined && Array.isArray(aliases)) {
+							aliases.forEach((alias) => {
+								if (argv.hasOwnProperty(alias)) {
+									data[option] = argv[alias];
+								}
+							});
+						}
+						if (typeof data[option] === 'string') {
+							switch (data[option].toLowerCase()) {
+								case 'true':
+									data[option] = true;
+									break;
+								case 'false':
+									data[option] = false;
+									break;
+								default:
+									break;
+							}
+						}
+					});
+
+					// Run filter function to customize data data
+					if (config.hasOwnProperty('filterData')) {
+						config.filterData(data);
 					}
 
 					// Set default template engine when not defined
@@ -116,10 +141,8 @@ async function init(env) {
 							(file) => file.templateEngine === engine
 						)) {
 							let content = null;
-
-							// Tries to get compiled content with template engine
 							try {
-								content = await consolidate[engine](file.template, context);
+								content = await consolidate[engine](file.template, data);
 							} catch (err) {
 								log(
 									`${'Error:'.red.bold} \n\t  A problem occurred trying to compile ${
@@ -157,7 +180,6 @@ async function init(env) {
 								// Create non-existing directories
 								if (dirsToCreate.length) {
 									const { mkdir } = require('fs').promises;
-
 									for (const [index, dir] of dirsToCreate.entries()) {
 										await mkdir(dir);
 									}
@@ -169,6 +191,19 @@ async function init(env) {
 									}\n`
 								);
 								throw err;
+							}
+
+							// Replace variables in the file name
+							const matches = file.output.match(/{[^{]*?}/g);
+							if (matches) {
+								matches.forEach((match) => {
+									const symbol = match.replace(/{|}/g, '');
+									// TODO: Warn undefined data
+									file.output = file.output.replace(
+										`{${symbol}}`,
+										`${data[symbol.snake]}`
+									);
+								});
 							}
 
 							try {

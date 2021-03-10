@@ -18,7 +18,10 @@ module.exports = {
 	// TEST command
 	test: {
 		description: 'Testing commands, args and options',
-		args: '<name> [optional]',
+		args: {
+			name: true,
+			path: false,
+		},
 		options: {
 			env: null,
 			development: ['d', 'dev'],

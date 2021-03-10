@@ -3,8 +3,14 @@ module.exports = {
 		// COMPONENT task
 		component: {
 			description: 'Generate component boilerplate files',
-			args: { name: true, path: false },
-			options: [],
+			args: {
+				name: true, // true for required
+				path: false,
+			},
+			options: {
+				override: ['o', 'force'], // optional aliases
+				description: null,
+			},
 			files: [
 				{
 					template: './.faber/templates/component-js',
@@ -12,14 +18,16 @@ module.exports = {
 					templateEngine: 'twig',
 				},
 				{
-					template: './.faber/templates/component-js',
-					output: './Components/outro/index.js',
-					templateEngine: 'twig',
-				},
-				{
 					template: './.faber/templates/component-css',
-					output: './assets/css/style.css',
+					output: './assets/css/{name}.css',
 					templateEngine: 'handlebars',
+				},
+			],
+			updates: [
+				{
+					template: './.faber/templates/component-js',
+					output: './Components/component/index.js',
+					templateEngine: 'twig',
 				},
 			],
 			questions: [
@@ -29,15 +37,20 @@ module.exports = {
 					message: 'Informe o path',
 				},
 			],
-			filterContext: (context) => {
-				const name = context.name;
-				context.name = {
+			filterData: (data) => {
+				const name = data.name;
+				data.name = {
 					kebab: name + '--kebab',
 					pascal: name + '--pascal',
 					snake: name + '--snake',
 					camel: name + '--camel',
 				};
-				return context;
+
+				if (!data.description) {
+					data.description = 'TODO: Define description';
+				}
+
+				return data;
 			},
 			templateEngines: ['twig', 'handlebars'],
 		},

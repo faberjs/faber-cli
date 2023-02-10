@@ -2,29 +2,19 @@
 	"name": "faber-cli",
 	"version": "0.0.1",
 	"description": "",
-	"main": "index.js",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
+	"exports": "./index.js",
+	"node": ">=14.16",
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
+	"type": "module",
 	"dependencies": {
-		"bracket-template": "^1.1.5",
+		"cli-table": "^0.3.11",
 		"colors": "^1.4.0",
-		"commander": "^7.1.0",
-		"console-table-printer": "^2.8.1",
-		"consolidate": "^0.16.0",
-		"del": "^6.0.0",
-		"figlet": "^1.5.0",
-		"gulp": "^4.0.2",
-		"handlebars": "^4.7.7",
-		"inquirer": "^8.0.0",
-		"liftoff": "^3.1.0",
-		"minimist": "^1.2.5",
-		"ora": "^5.3.0",
-		"twig": "^1.15.4",
-		"v8flags": "^3.2.0"
+		"commander": "^10.0.0",
+		"home-dir": "^1.0.0",
+		"inquirer": "^9.1.4",
+		"shelljs": "^0.8.5"
 	},
 	"bin": {
 		"faber": "index.js"

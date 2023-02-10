@@ -2,4 +2,8 @@
 *.DS_Store
 
 # Dependendies from NPM
-/node_modules
+node_modules
+
+# Other
+notes.md
+bkp.js

@@ -1,5 +1,0 @@
-# Machine and cache files
-*.DS_Store
-
-# Dependendies from NPM
-/node_modules

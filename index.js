@@ -36,13 +36,13 @@ program
 program
 	.command('create')
 	.arguments('<name>')
-	.option('--simulate', 'Log the possible changes without modifying any file.')
+	.option('--dry', 'Simulate the actions without making any changes.')
 	.option(
 		'--keep-git',
 		'Prevent removal of the .git folder. Useful to check what has changed on the original boilerplate.'
 	)
-	.option('--use-existing', 'Skip the prompt to use existing folder. Useful when developing')
-	.description('Create a new project with a configured boilerplate.')
+	.option('--use-existing', 'Skip the prompt to use existing folder.  Useful when working on a boilerplate.')
+	.description('Creates a new project with a configured boilerplate.')
 	.action(async (name, options) => {
 		try {
 			// Check if git is installed
@@ -86,8 +86,8 @@ program
 	});
 
 program
-	.command('run')
-	.option('--dry', 'Run commands without making any changes')
+	.command('execute')
+	.option('--dry', 'Simulate the actions without making any changes.')
 	.option('--data', 'Encoded JSON data to be passed to the script')
 	.option('--no-preview', 'Do not show the JSON data preview')
 	.description('Run the script inside the current repository (usually for development)')
@@ -116,11 +116,29 @@ program
 		console.log(results);
 	});
 
-const addArgs = '<boilerplate> <repository> [name]';
+program
+	.command('ls')
+	.description('List your registered boilerplates.')
+	.action(async () => {
+		try {
+			const boilerplates = await getBoilerplates();
+			if (!boilerplates.length) {
+				printMsg('There are no boilerplates to list\n', 'error');
+				printMsg(`You can add a boilerplate with: faber add ${addArgs}\n`, 'info');
+				return;
+			}
+
+			printBoilerplatesTable(boilerplates);
+		} catch (error) {
+			console.error(error);
+		}
+	});
+
+const addArgs = '<alias> <repository> [name]';
 program
 	.command('add')
 	.arguments(addArgs)
-	.description('Add a boilerplate repository to your list of available boilerplates.')
+	.description('Adds a boilerplate to your list of available boilerplates.')
 	.action(async (alias, repo, name) => {
 		try {
 			const settings = await getSettings();
@@ -150,26 +168,8 @@ program
 	});
 
 program
-	.command('ls')
-	.description('List all configured boilerplates.')
-	.action(async () => {
-		try {
-			const boilerplates = await getBoilerplates();
-			if (!boilerplates.length) {
-				printMsg('There are no boilerplates to list\n', 'error');
-				printMsg(`You can add a boilerplate with: faber add ${addArgs}\n`, 'info');
-				return;
-			}
-
-			printBoilerplatesTable(boilerplates);
-		} catch (error) {
-			console.error(error);
-		}
-	});
-
-program
-	.command('rm <boilerplate>')
-	.description('Remove a configured boilerplate.')
+	.command('rm <alias>')
+	.description('Removes a boilerplate from your list of available boilerplates.')
 	.action(async (alias) => {
 		try {
 			const settings = await getSettings();

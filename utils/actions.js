@@ -41,6 +41,15 @@ async function runReplacements(files, from, to) {
 }
 
 async function runConditionals(files, identifier, condition) {
+	const comments = [
+		['\\/\\*\\*?', '*/'],
+		['<!--', '-->'],
+		['\\/\\/\\/?', 0],
+		['##?', 0],
+		['=begin', '=end'],
+		['"""', '"""'],
+		["'''", "'''"],
+	];
 	const openings = `((?:\\/\\*\\*?)|(?:<!--))`;
 	const closures = `((?:\\*?\\*\\/)|(?:-->))`;
 
@@ -64,8 +73,6 @@ async function runConditionals(files, identifier, condition) {
 	);
 
 	return new Promise(async (resolve, reject) => {
-		console.log(patternTrue);
-		console.log(patternFalse);
 		try {
 			const resultsTrue = await replace({ files, from: patternTrue, to: '$4' });
 			const resultsFalse = await replace({ files, from: patternFalse, to: '' });

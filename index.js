@@ -2,11 +2,8 @@
 
 import { program } from 'commander';
 import { readFile } from 'fs/promises';
-import inquirer from 'inquirer';
-import colors from 'colors';
 import shell from 'shelljs';
-import jsonpack from 'jsonpack/main.js';
-// import { compress, decompress } from 'lzw-compressor';
+// import jsonpack from 'jsonpack/main.js';
 import { folderExists, getFileContent, getRelativePath } from './utils/files.js';
 
 import {
@@ -20,6 +17,12 @@ import { printBoilerplatesTable, printMsg } from './utils/ui.js';
 import { cloneRepository } from './utils/repo.js';
 import faber from './utils/faber.js';
 import { runActions } from './utils/actions.js';
+import {
+	askJsonData,
+	askBoilerplateUpdateConfirmation,
+	askBoilerplateChoice,
+	askToContinueWithExistingFolder,
+} from './utils/prompts.js';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
 
@@ -52,13 +55,7 @@ program
 			// Check if folder already exists
 			if (folderExists(name) && !options.useExisting) {
 				printMsg(`There is already a folder named \`*${name}*\` on this directory.`, 'warn');
-				const { proceedWithExistingFolder } = await inquirer.prompt({
-					type: 'confirm',
-					name: 'proceedWithExistingFolder',
-					message: `Do you want to continue with this folder?`,
-					suffix: ` (git clone will be skipped)`,
-					default: false,
-				});
+				const { proceedWithExistingFolder } = askToContinueWithExistingFolder();
 
 				if (!proceedWithExistingFolder) {
 					printMsg(`Operation cancelled`, 'muted');
@@ -68,15 +65,7 @@ program
 
 			// Get registered boilerplates
 			const boilerplates = await getBoilerplates();
-			const { boilerplate } = await inquirer.prompt([
-				{
-					type: 'list',
-					name: 'boilerplate',
-					message: `Choose a boilerplate:`,
-					choices: boilerplates.map((b) => ({ name: `${b.name} ${colors.gray(`(${b.repo})`)}`, value: b.alias })),
-					filter: (alias) => boilerplates.find((b) => b.alias === alias),
-				},
-			]);
+			const { boilerplate } = askBoilerplateChoice(boilerplates);
 
 			try {
 				// const repoDetails = gitUrlParse('https://gitlab.com/gpc-dev/desenrolla');
@@ -118,26 +107,7 @@ program
 		const bytes = Buffer.from(compressed).length; */
 
 		// Request JSON data
-		const { json } = await inquirer.prompt([
-			{
-				type: 'input',
-				name: 'json',
-				message: `Paste the project data`,
-				suffix: ` (minified JSON):`.grey,
-				validate: (input) => {
-					let json = {};
-					try {
-						json = JSON.parse(input);
-					} catch (err) {
-						return (
-							` The provided data doesn't seem to be a valid JSON.`.red +
-							` Make sure the JSON is minified and in one single line.`.red
-						);
-					}
-					return true;
-				},
-			},
-		]);
+		const { json } = askJsonData();
 
 		const data = JSON.parse(json);
 
@@ -167,14 +137,7 @@ program
 				printMsg(`A boilerplate with alias *${alias}* already exists:`, 'error');
 				printBoilerplatesTable([existingBoilerplate]);
 
-				const { shouldUpdate } = await inquirer.prompt([
-					{
-						type: 'confirm',
-						name: 'shouldUpdate',
-						message: 'Do you want to update this boilerplate?',
-						default: false,
-					},
-				]);
+				const { shouldUpdate } = askBoilerplateUpdateConfirmation();
 
 				shouldUpdate && (await updateBoilerplate(alias, data));
 				return;

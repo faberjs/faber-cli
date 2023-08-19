@@ -107,7 +107,7 @@ program
 		const bytes = Buffer.from(compressed).length; */
 
 		// Request JSON data
-		const { json } = askJsonData();
+		const { json } = await askJsonData();
 
 		const data = JSON.parse(json);
 

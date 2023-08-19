@@ -1,4 +1,5 @@
 import colors from 'colors';
+import inquirer from 'inquirer';
 
 export async function askJsonData() {
 	return inquirer.prompt([

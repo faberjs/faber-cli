@@ -11,7 +11,54 @@ To use the Faber CLI you will need:
 -  [Node.js](https://nodejs.org/) - JavaScript runtime environment
 -  [NPM](https://www.npmjs.com/) – JavaScript dependencies manager
 
-## Commands
+## Getting Started
+
+To use Faber CLI in a boilerplate, you need to create a `faberconfig.js` file at the root of your boilerplate project.
+
+Usaully, this file uses the `.js` extension, but depending on your preferences and your project settings (`package.json`, if existing on the project's root) you might want to use a different extension.
+
+To use _CommonJS_, the file must be either:
+
+-  `.js` with `type: "commonjs"` in your `package.json`.
+-  `.cjs` with any `type` in your `package.json`.
+-  `.js` without having a `package.json` in the root.
+
+To use _ESM_, the file must be eihter:
+
+-  `.js` with `type: "module"` in your `package.json`.
+-  `.mjs` with any `type` in your `package.json`.
+
+### Configuring `faberconfig`
+
+See below a basic example for usign _CommonJS_ or _ESM_.
+
+#### CommonJS
+
+```js
+module.exports = function (faber) {
+	faber.setActions((data) => {
+		return [
+			// Add your actions here
+			// ...
+		];
+	});
+};
+```
+
+#### ESM
+
+```js
+export default (faber) => {
+	faber.setActions((data) => {
+		return [
+			// Add your actions here
+			// ...
+		];
+	});
+};
+```
+
+## Commands (CLI)
 
 The CLI has commands to **create** new projects, **test** boilerplates, and also **manage** available repository aliases on your local machine.
 
@@ -285,3 +332,9 @@ In the last line however, it keeps the `“not”` word when the condition is `f
 -  Currently, the only supported commenting styles are block comments like `<!-- -->` and `/* */`:
 -  The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
 -  The identifier is **required** for both `@faber-if` and `@faber-endif` to the action to work correctly.
+
+## Mentions
+
+This documentation was highly inspired by the [Plop](https://plopjs.com/) documentation.
+
+_Plop_ is an amazing framework with a similar goal as _Faber_, however, while _Plop_ is amazing for generating code inside your project, _Faber_ is fully focused on starting new projects faster. (_P.S. You can use both together in your boilerplates_ 😉)

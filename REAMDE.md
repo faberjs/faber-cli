@@ -113,3 +113,49 @@ $ faber rm my-boilerplate
 `faber rm <alias>`
 
 -  `<alias>` (_mandatory_) – The reference to the boilerpolate to remove from your list.
+
+## Actions
+
+Actions are defined on the `faberconfig` file of the boilerplate using the `faber.setActions()` function.
+
+You can use the **project's data** from the provided JSON (requested at `faber create` or `faber execute` commands) on any action.
+
+See below the available actions that you can use:
+
+### Replace
+
+Replaces text or patterns on files.
+
+| Property | Type                              | Description                                                                                               |
+| -------- | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `type`   | _String_                          | Should be `'replace'` for this action.                                                                    |
+| `files`  | _String,[String]_                 | Path to the files where the replace should happen. It can be an array of paths, and can use glob pattern. |
+| `from`   | _String,[String],RegExp,[RegExp]_ | Text(s) or pattern(s) to look for in the `files`.                                                         |
+| `to`     | _String,[String],RegExp,[RegExp]_ | The replacement text(s). If array is provided, should match the same length as the `from` array.          |
+
+#### Usage examples
+
+```js
+faber.setActions((data) => {
+	return [
+		// Replace first occurrence of a string in single file
+		{
+			type: 'replace',
+			files: 'README.md',
+			from: 'PROJECT_NAME',
+			to: data.projectName,
+		},
+		// Replace all occurrences of multiple strings in multiple files using glob patterns
+		{
+			type: 'replace',
+			files: ['README.md', 'package.json', 'src/*'],
+			from: [/AUTHOR_NAME/g, /AUTHOR_URI/g],
+			to: [data.authorName, data.authorUri],
+		},
+	];
+});
+```
+
+> **Notice**: By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regex pattern with the global flag (like `/something/g`).
+
+This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more usage details visit its [official documentation](https://github.com/adamreisnz/replace-in-file#advanced-usage).

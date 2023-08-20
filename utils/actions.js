@@ -1,6 +1,6 @@
 import replace from 'replace-in-file';
-import { renameSync } from 'fs';
 import { deleteAsync } from 'del';
+import { moveFile } from 'move-file';
 import { printMsg } from './ui.js';
 
 export async function runActions(actions) {
@@ -10,6 +10,7 @@ export async function runActions(actions) {
 				let replaced = [];
 				let deleted = [];
 				let renamed = [];
+				let moved = [];
 				for (const [index, action] of actions.entries()) {
 					switch (action.type) {
 						case 'replace':
@@ -17,7 +18,7 @@ export async function runActions(actions) {
 								const replacementsResults = await runReplacements(action.files, action.from, action.to);
 								replaced = [...replaced, ...replacementsResults];
 							} catch (err) {
-								printMsg(`Error in the action ${index + 1} (${action.type}) in REPLACE: ${err}`, 'error');
+								printMsg(`Error in the action ${index + 1} (${action.type}). ${err}`, 'error');
 							}
 							break;
 						case 'conditional':
@@ -29,15 +30,15 @@ export async function runActions(actions) {
 								);
 								replaced = [...replaced, ...contitionalsResults];
 							} catch (err) {
-								printMsg(`Error in the action ${index + 1} (${action.type}) in CONDITIONAL: ${err}`, 'error');
+								printMsg(`Error in the action ${index + 1} (${action.type}). ${err}`, 'error');
 							}
 							break;
-						case 'rename':
+						case 'move':
 							try {
-								const renamingResults = await runRenaming(action.from, action.to);
-								renamed = renamingResults;
+								const movingResults = await runMoving(action.from, action.to);
+								moved = movingResults;
 							} catch (err) {
-								printMsg(`Error in the action ${index + 1} (${action.type}) in RENAME: ${err}`, 'error');
+								printMsg(`Error in the action ${index + 1} (${action.type}). ${err}`, 'error');
 							}
 							break;
 						case 'delete':
@@ -45,7 +46,7 @@ export async function runActions(actions) {
 								const deletionsResults = await runDeletions(action.paths);
 								deleted = deletionsResults;
 							} catch (err) {
-								printMsg(`Error in the action ${index + 1} (${action.type}) in DELETE: ${err}`, 'error');
+								printMsg(`Error in the action ${index + 1} (${action.type}). ${err}`, 'error');
 							}
 							break;
 						default:
@@ -115,17 +116,17 @@ async function runDeletions(paths) {
 	return await deleteAsync(paths);
 }
 
-async function runRenaming(from, to) {
+async function runMoving(from, to) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const results = [];
 			if (Array.isArray(from) && Array.isArray(to) && from.length === to.length) {
 				for (const [index, fromPath] of from.entries()) {
-					renameSync(fromPath, to[index]);
+					await moveFile(fromPath, to[index]);
 					//results.push(result);
 				}
 			} else {
-				renameSync(from, to);
+				await moveFile(from, to);
 				//results.push(result);
 			}
 			resolve(results);

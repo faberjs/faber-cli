@@ -4,8 +4,7 @@ import { program } from 'commander';
 import { readFile } from 'fs/promises';
 import shell from 'shelljs';
 // import jsonpack from 'jsonpack/main.js';
-import { folderExists, getFileContent, getRelativePath } from './utils/files.js';
-
+import { folderExists, getRelativePath } from './utils/files.js';
 import {
 	addBoilerplate,
 	getBoilerplates,
@@ -17,6 +16,7 @@ import { printBoilerplatesTable, printMsg } from './utils/ui.js';
 import { cloneRepository } from './utils/repo.js';
 import faber from './utils/faber.js';
 import { runActions } from './utils/actions.js';
+import { parseJsonData } from './utils/data.js';
 import {
 	askJsonData,
 	askBoilerplateUpdateConfirmation,
@@ -25,8 +25,6 @@ import {
 } from './utils/prompts.js';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
-
-const options = program.opts();
 
 program
 	.name('faber')
@@ -88,10 +86,10 @@ program
 program
 	.command('execute')
 	.option('--dry', 'Simulate the actions without making any changes.')
-	.option('--data', 'Encoded JSON data to be passed to the script')
+	.option('--data <string>', 'Encoded JSON data to be passed to the script')
 	.option('--no-preview', 'Do not show the JSON data preview')
 	.description('Run the script inside the current repository (usually for development)')
-	.action(async () => {
+	.action(async (options) => {
 		const config = await import(getRelativePath('faberconfig.js'));
 		config.default(faber);
 
@@ -106,10 +104,23 @@ program
 		const compressed = jsonpack.pack(jsonStr);
 		const bytes = Buffer.from(compressed).length; */
 
-		// Request JSON data
-		const { json } = await askJsonData();
-
-		const data = JSON.parse(json);
+		// Get JSON data
+		let data;
+		if (options.data) {
+			data = parseJsonData(options.data);
+			if (!data) {
+				printMsg(
+					`The provided data is not a valid encoded JSON string.` +
+						`\n  Make sure the JSON is minified or encoded, and in one single line.`,
+					'error'
+				);
+				console.error(error);
+				process.exit(1);
+			}
+		} else {
+			const { json } = await askJsonData();
+			data = parseJsonData(json);
+		}
 
 		// Run boilerplate actions
 		const results = await runActions(faber.actions(data));
@@ -190,4 +201,4 @@ program
 		}
 	});
 
-program.parse();
+program.parse(process.argv);

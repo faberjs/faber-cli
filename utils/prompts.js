@@ -1,5 +1,6 @@
 import colors from 'colors';
 import inquirer from 'inquirer';
+import { parseJsonData } from './data.js';
 
 export async function askJsonData() {
 	return inquirer.prompt([
@@ -9,16 +10,10 @@ export async function askJsonData() {
 			message: `Paste the project data`,
 			suffix: ` (minified JSON):`.grey,
 			validate: (input) => {
-				let json = {};
-				try {
-					json = JSON.parse(input);
-				} catch (err) {
-					return (
-						` The provided data doesn't seem to be a valid JSON.`.red +
-						` Make sure the JSON is minified and in one single line.`.red
-					);
-				}
-				return true;
+				return parseJsonData(input)
+					? true
+					: ` The provided data doesn't seem to be a valid JSON.`.red +
+							` Make sure the JSON is minified or encoded, and in one single line.`.red;
 			},
 		},
 	]);

@@ -64,8 +64,8 @@ The CLI has commands to **create** new projects, **test** boilerplates, and also
 
 In a nutshell, you will use:
 
--  `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo**, and then run the `faber execute` command inside it.
--  `faber execute` – To execute the configured actions on an boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
+-  `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo**, and then execute the `faber run` command inside it.
+-  `faber run` – To execute the configured actions on an boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
 -  `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
 
 ### `faber create`
@@ -87,21 +87,21 @@ $ faber create my-project --simulate --keep-git --use-existing
 #### What it does?
 
 1. Clones the boilerplate repository into a new folder with the provided name.
-2. Run the steps from the `faber execute` command.
+2. Run the steps from the `faber run` command.
 3. Deletes the `.git` folder from the repository (when not using the `--keep-git` flag);
 
 > **Notice**: You need to have permission to read from the boilerplate repository. When using private repositories, you need to authenticate via SSH or HTTPS as normally.
 
-### `faber execute`
+### `faber run`
 
-Execute the configured actions on the current directory. Useful for development.
+Run the configured actions on the current directory. Useful for development.
 
 > A `faberconfig` file should be present on the directory.
 
 #### Usage example
 
 ```shell
-$ faber execute --dry --data --no-preview
+$ faber run --dry --data --no-preview
 ```
 
 #### Flags (optional)
@@ -109,6 +109,7 @@ $ faber execute --dry --data --no-preview
 -  `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
 -  `--data` – Encoded JSON data to be passed to the script.
 -  `--no-preview` – Do not show the JSON data preview.
+-  `--no-results` – Do not show the actions results.
 
 #### What it does?
 
@@ -165,7 +166,7 @@ $ faber rm my-boilerplate
 
 Actions are defined on the `faberconfig` file of the boilerplate using the `faber.setActions()` function.
 
-You can use the **project's data** from the provided JSON (requested at `faber create` or `faber execute` commands) on any action.
+You can use the **project's data** from the provided JSON (requested at `faber create` or `faber run` commands) on any action.
 
 See below the available actions that you can use:
 
@@ -173,12 +174,12 @@ See below the available actions that you can use:
 
 Replaces text or patterns on files or glob patterns.
 
-| Property | Type                              | Description                                                                                               |
-| -------- | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `type`   | _String_                          | Should be `'replace'` for this action.                                                                    |
-| `files`  | _String,[String]_                 | Path to the files where the replace should happen. It can be an array of paths, and can use glob pattern. |
-| `from`   | _String,[String],RegExp,[RegExp]_ | Text(s) or pattern(s) to look for in the `files`.                                                         |
-| `to`     | _String,[String],RegExp,[RegExp]_ | The replacement text(s). If array is provided, should match the same length as the `from` array.          |
+| Property | Type                              | Required | Description                                                                                               |
+| -------- | --------------------------------- | -------- | --------------------------------------------------------------------------------------------------------- |
+| `type`   | _String_                          | Yes      | Should be `'replace'` for this action.                                                                    |
+| `files`  | _String,[String]_                 | Yes      | Path to the files where the replace should happen. It can be an array of paths, and can use glob pattern. |
+| `from`   | _String,[String],RegExp,[RegExp]_ | Yes      | Text(s) or pattern(s) to look for in the `files`.                                                         |
+| `to`     | _String,[String],RegExp,[RegExp]_ | Yes      | The replacement text(s). If array is provided, should match the same length as the `from` array.          |
 
 #### Usage examples
 
@@ -213,10 +214,10 @@ faber.setActions((data) => {
 
 Deletes files or entire folders by defined paths or glob patterns.
 
-| Property | Type              | Description                                                             |
-| -------- | ----------------- | ----------------------------------------------------------------------- |
-| `type`   | _String_          | Should be `'delete'` for this action.                                   |
-| `paths`  | _String,[String]_ | Paths to the files or folders to delete. Also supporting glob patterns. |
+| Property | Type              | Required | Description                                                             |
+| -------- | ----------------- | -------- | ----------------------------------------------------------------------- |
+| `type`   | _String_          | Yes      | Should be `'delete'` for this action.                                   |
+| `paths`  | _String,[String]_ | Yes      | Paths to the files or folders to delete. Also supporting glob patterns. |
 
 #### Usage examples
 
@@ -246,11 +247,11 @@ faber.setActions((data) => {
 
 Can be used to move or rename files and folders.
 
-| Property | Type              | Description                                                    |
-| -------- | ----------------- | -------------------------------------------------------------- |
-| `type`   | _String_          | Should be `'move'` for this action.                            |
-| `from`   | _String,[String]_ | Path(s) to the source files or folders to move.                |
-| `to`     | _String,[String]_ | Destination path(s) to the files or folders to move or rename. |
+| Property | Type              | Required | Description                                                    |
+| -------- | ----------------- | -------- | -------------------------------------------------------------- |
+| `type`   | _String_          | Yes      | Should be `'move'` for this action.                            |
+| `from`   | _String,[String]_ | Yes      | Path(s) to the source files or folders to move.                |
+| `to`     | _String,[String]_ | Yes      | Destination path(s) to the files or folders to move or rename. |
 
 #### Usage examples
 
@@ -284,12 +285,12 @@ faber.setActions((data) => {
 
 Update files' content based on conditional rules. Useful to keep/remove text according to conditions with the provided data.
 
-| Property     | Type              | Description                                                                                                                                                                                      |
-| ------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`       | _String_          | Should be `'conditional'` for this action.                                                                                                                                                       |
-| `files`      | _String,[String]_ | Path to the files where the conditional updates should happen. It can be an array of paths.                                                                                                      |
-| `identifier` | _String_          | A token to identify the content to be kept/removed.                                                                                                                                              |
-| `condition`  | _Boolean_         | The condition to keep/remove the content. When the condition is `true`, the block is kept. However, when the block uses a negative token (`!`), the block is kept when the condition is `false`. |
+| Property     | Type              | Required | Description                                                                                                                                                                                      |
+| ------------ | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `type`       | _String_          | Yes      | Should be `'conditional'` for this action.                                                                                                                                                       |
+| `files`      | _String,[String]_ | Yes      | Path to the files where the conditional updates should happen. It can be an array of paths.                                                                                                      |
+| `identifier` | _String_          | Yes      | A token to identify the content to be kept/removed.                                                                                                                                              |
+| `condition`  | _Boolean_         | Yes      | The condition to keep/remove the content. When the condition is `true`, the block is kept. However, when the block uses a negative token (`!`), the block is kept when the condition is `false`. |
 
 #### Usage examples
 
@@ -333,8 +334,47 @@ In the last line however, it keeps the `“not”` word when the condition is `f
 -  The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
 -  The identifier is **required** for both `@faber-if` and `@faber-endif` to the action to work correctly.
 
+### Run
+
+Execute shell commands.
+
+| Property   | Type              | Required | Description                                                                                  |
+| ---------- | ----------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `type`     | _String_          | Yes      | Should be `'run'` for this action.                                                           |
+| `commands` | _String,[String]_ | Yes      | Command(s) to execute sequentially.                                                          |
+| `silent`   | _Boolean_         | No       | If `false`, logs the command(s) output on the console. Default is `true` (omits the output). |
+
+#### Usage examples
+
+```js
+faber.setActions((data) => {
+	return [
+		// Executes a single command
+		{
+			type: 'run',
+			files: 'echo "Hello World!"',
+		},
+		// Executes multiple commands
+		{
+			type: 'run',
+			files: ['npm i', 'npm run start'],
+		},
+		// Same as above, but using command separators
+		{
+			type: 'run',
+			files: 'npm i && npm run start', // or 'npm i; npm run start'
+		},
+	];
+});
+```
+
+#### Considerations
+
+-  Using **command separators** (`&&` or `;`) has the exact same behavior as using an array with multiple commands. It's just a matter of preference.
+-  This action uses the `exec()` function from the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands.
+
 ## Mentions
 
 This documentation was highly inspired by the [Plop](https://plopjs.com/) documentation.
 
-_Plop_ is an amazing framework with a similar goal as _Faber_, however, while _Plop_ is amazing for generating code inside your project, _Faber_ is fully focused on starting new projects faster. (_P.S. You can use both together in your boilerplates_ 😉)
+_Plop_ is an amazing framework with a similar goal as _Faber_, however, while _Plop_ is amazing for generating code inside your project, _Faber_ is fully focused on starting new projects. (_P.S. You can use both together in your boilerplate_ 😉)

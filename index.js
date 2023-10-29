@@ -37,6 +37,10 @@ program
 		'--branch <string>',
 		'Name of the git branch to retrieve from the repository. If not defined, uses the default branch.'
 	)
+	.option('--data <string>', 'Encoded JSON data to be passed to the script')
+	.option('--no-preview', 'Do not show the JSON data preview')
+	.option('--deep-preview', 'Show the JSON data preview with all the properties and array items expanded')
+	.option('--no-results', 'Do not show the actions results')
 	.description('Creates a new project with a configured boilerplate.')
 	.action(handleCreateCommand);
 

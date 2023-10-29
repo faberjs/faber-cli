@@ -42,12 +42,37 @@ export async function askBoilerplateChoice(boilerplates) {
 	]);
 }
 
-export async function askToContinueWithExistingFolder() {
+export async function askActionWithExistingFolder() {
+	return inquirer.prompt({
+		type: 'list',
+		name: 'actionWithExistingFolder',
+		message: `How do you want to proceed?`,
+		default: 'cancel',
+		choices: [
+			{
+				name: `Cancel ${colors.gray(`(stop the execution)`)}`,
+				short: 'Cancel',
+				value: 'cancel',
+			},
+			{
+				name: `Continue with this folder ${colors.gray(`(git clone will be skipped)`)}`,
+				short: 'Continue with folder',
+				value: 'continue',
+			},
+			{
+				name: `Override existing folder ${colors.gray(`(the folder will be deleted)`)}`,
+				short: 'Override folder',
+				value: 'override',
+			},
+		],
+	});
+}
+
+export async function askToProceedWithProvidedData(hasData = true) {
 	return inquirer.prompt({
 		type: 'confirm',
-		name: 'proceedWithExistingFolder',
-		message: `Do you want to continue with this folder?`,
-		suffix: ` (git clone will be skipped)`,
-		default: false,
+		name: 'proceedWithProvidedData',
+		message: hasData ? `Do you want to continue with the provided data?` : `Do you want to continue without data?`,
+		default: true,
 	});
 }

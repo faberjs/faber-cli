@@ -13,13 +13,14 @@
 		"colors": "^1.4.0",
 		"commander": "^10.0.0",
 		"del": "^7.0.0",
-		"git-url-parse": "^13.1.0",
 		"home-dir": "^1.0.0",
 		"inquirer": "^9.1.4",
+		"joi": "^17.11.0",
 		"jsonpack": "^1.1.5",
 		"move-file": "^3.1.0",
 		"node-fetch": "^3.3.0",
 		"replace-in-file": "^6.3.5",
+		"revalidator": "^0.3.1",
 		"shelljs": "^0.8.5"
 	},
 	"bin": {

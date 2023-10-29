@@ -38,7 +38,9 @@ export function printMsg(msg, type = '', symbol = '!') {
 export function printError(type, msg, error = '') {
 	const message = colors.red('✖ ' + colors.bold(`${type}: `)) + msg;
 	console.log(message);
-	error && console.log('↳', error.replace(/\n$/, ''));
+	if (error) {
+		typeof error === 'string' ? console.log('↳', error.replace(/\n$/, '')) : console.log('↳', error);
+	}
 	console.log();
 }
 

@@ -81,7 +81,7 @@ export async function handleRunCommand(options) {
 					colors.gray(`(You can use the --deep-preview option for viweing objects and arrays details)\n`)
 				);
 		}
-	} // --no-preview
+	}
 
 	// Confirm to proceed with provided data
 	const { proceedWithProvidedData } = await askToProceedWithProvidedData(hasData);
@@ -104,7 +104,7 @@ export async function handleRunCommand(options) {
 	try {
 		validateActions(actions);
 	} catch (error) {
-		printError('Validation error', 'There are invalid action settings.', error);
+		printError('Validation error', 'There are invalid action settings or data.', error);
 		shell.exit(0);
 	}
 
@@ -184,6 +184,10 @@ export async function handleCreateCommand(name, options) {
 	} catch (error) {
 		console.error(error);
 	}
+
+	// Continue with the `run` command
+	shell.cd(name);
+	await handleRunCommand(options);
 }
 
 /**

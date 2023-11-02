@@ -108,7 +108,7 @@ export async function handleRunCommand(options) {
 		shell.exit(0);
 	}
 
-	shell.exit(1);
+	//shell.exit(1);
 
 	try {
 		results = await runActions(actions);

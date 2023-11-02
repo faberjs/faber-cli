@@ -16,19 +16,19 @@ import { getRelativePath, getAbsolutePath } from './files.js';
 export function validateActions(actions) {
 	if (!Array.isArray(actions)) {
 		// Check if the returned actions value is an array
-		throw new Error(`The ${colors.bold(`setActions()`)} callback function must return an array.`);
+		throw new Error(`The ${colors.cyan(`setActions()`)} callback function must return an array.`);
 	}
 
 	const availableActions = ['replace', 'conditional', 'move', 'delete', 'run'];
 	actions.forEach((action, index) => {
 		if (!action.hasOwnProperty('type')) {
 			// Check if the action type is defined
-			throw new Error(`The ${colors.bold(`type`)} property is required for each action.`);
+			throw new Error(`The \`${colors.cyan(`type`)}\` property is required for each action.`);
 		}
 
 		if (!availableActions.includes(action.type)) {
 			// Check if the action type is valid
-			throw new Error(`\`${colors.magenta(action.type)}\` is not a valid action type.`);
+			throw new Error(`\`${colors.cyan(action.type)}\` is not a valid action type.`);
 		}
 
 		switch (action.type) {
@@ -117,7 +117,9 @@ export function validateActions(actions) {
 		 */
 		function throwError(index, action, message) {
 			throw new Error(
-				`On action [${colors.cyan(`${index}`)}] (of type \`${action.type}\`) - ` + message + '.' // TODO: Add link to documentation
+				`On action [${colors.cyan(`${index}`)}] (of type \`${colors.cyan(action.type)}\`) - ` +
+					adaptJoiMessage(message) +
+					'.' // TODO: Add link to documentation
 			);
 		}
 	});
@@ -149,7 +151,9 @@ export async function runActions(actions) {
 										})
 								);
 							} catch (err) {
-								reject(`Error in the action ${index + 1} (of type \`${action.type}\`). ${err}`);
+								reject(
+									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+								);
 							}
 							break;
 						case 'conditional':
@@ -172,7 +176,9 @@ export async function runActions(actions) {
 										})
 								);
 							} catch (err) {
-								reject(`Error in the action ${index + 1} (of type \`${action.type}\`). ${err}`);
+								reject(
+									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+								);
 							}
 							break;
 						case 'move':
@@ -192,7 +198,9 @@ export async function runActions(actions) {
 										})
 								);
 							} catch (err) {
-								reject(`Error in the action ${index + 1} (of type \`${action.type}\`). ${err}`);
+								reject(
+									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+								);
 							}
 							break;
 						case 'delete':
@@ -208,7 +216,9 @@ export async function runActions(actions) {
 									})
 								);
 							} catch (err) {
-								reject(`Error in the action ${index + 1} (of type \`${action.type}\`). ${err}`);
+								reject(
+									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+								);
 							}
 							break;
 						case 'run':
@@ -249,12 +259,16 @@ export async function runActions(actions) {
 										});
 									} else {
 										reject(
-											`Error in the action ${index + 1} (of type \`${action.type}\`). ${shellResults.stderr}`
+											`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${
+												shellResults.stderr
+											}`
 										);
 									}
 								}
 							} catch (err) {
-								reject(`Error in the action ${index + 1} (of type \`${action.type}\`). ${err}`);
+								reject(
+									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+								);
 							}
 							break;
 						default:
@@ -361,4 +375,11 @@ async function runMoving(from, to) {
 			reject(err);
 		}
 	});
+}
+
+function adaptJoiMessage(message) {
+	const coloredProperty = colors.cyan('$1');
+	return message
+		.replace(/"(\w+)" is/, `The \`${coloredProperty}\` property is`)
+		.replace(/"(\w+)" must be/, `The \`${coloredProperty}\` property must be`);
 }

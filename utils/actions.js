@@ -37,6 +37,7 @@ export function validateActions(actions) {
 					const schema = Joi.object({
 						type: Joi.string().valid('replace').required(),
 						files: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						ignore: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
 						from: Joi.alternatives()
 							.try(Joi.string(), Joi.object().regex(), Joi.array().items(Joi.string(), Joi.object().regex()))
 							.required(),
@@ -54,6 +55,7 @@ export function validateActions(actions) {
 					const schema = Joi.object({
 						type: Joi.string().valid('conditional').required(),
 						files: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						ignore: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
 						identifier: Joi.string().required(),
 						condition: Joi.boolean().required(),
 					}).unknown();
@@ -137,7 +139,12 @@ export async function runActions(actions) {
 					switch (action.type) {
 						case 'replace':
 							try {
-								const replacementsResults = await runReplacements(action.files, action.from, action.to);
+								const replacementsResults = await runReplacements(
+									action.files,
+									action.ignore || [],
+									action.from,
+									action.to
+								);
 								results = results.concat(
 									replacementsResults
 										.filter((result) => result.hasChanged)
@@ -160,6 +167,7 @@ export async function runActions(actions) {
 							try {
 								const contitionalsResults = await runConditionals(
 									action.files,
+									action.ignore || [],
 									action.identifier,
 									action.condition
 								);
@@ -283,9 +291,10 @@ export async function runActions(actions) {
 	});
 }
 
-async function runReplacements(files, from, to) {
+async function runReplacements(files, ignore, from, to) {
 	return await replace({
 		files,
+		ignore,
 		from,
 		to,
 		countMatches: true,

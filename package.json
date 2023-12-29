@@ -1,5 +1,5 @@
 {
-	"name": "faber-cli",
+	"name": "faber",
 	"version": "0.0.1",
 	"description": "",
 	"exports": "./index.js",

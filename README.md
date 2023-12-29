@@ -1,5 +1,7 @@
 # Faber CLI
 
+> ⚠ This is a work in progress.
+
 Faber is a CLI that helps you creating/scaffolding new projects using custom boilerplates.
 
 You can **prepare your own boilerplates** to make them configurable for creating new projects with Faber, and pass custom parameters, data or actions to execute in the scaffolding of your new project.
@@ -20,14 +22,14 @@ Usaully, this file uses the `.js` extension, but depending on your preferences a
 
 To use _CommonJS_, the file must be either:
 
--  `.js` with `type: "commonjs"` in your `package.json`.
--  `.cjs` with any `type` in your `package.json`.
--  `.js` without having a `package.json` in the root.
+- `.js` with `type: "commonjs"` in your `package.json`.
+- `.cjs` with any `type` in your `package.json`.
+- `.js` without having a `package.json` in the root.
 
 To use _ESM_, the file must be eihter:
 
--  `.js` with `type: "module"` in your `package.json`.
--  `.mjs` with any `type` in your `package.json`.
+- `.js` with `type: "module"` in your `package.json`.
+- `.mjs` with any `type` in your `package.json`.
 
 ### Configuring `faberconfig`
 
@@ -37,12 +39,12 @@ See below a basic example for usign _CommonJS_ or _ESM_.
 
 ```js
 module.exports = function (faber) {
-	faber.setActions((data) => {
-		return [
-			// Add your actions here
-			// ...
-		];
-	});
+  faber.setActions((data) => {
+    return [
+      // Add your actions here
+      // ...
+    ];
+  });
 };
 ```
 
@@ -50,12 +52,12 @@ module.exports = function (faber) {
 
 ```js
 export default (faber) => {
-	faber.setActions((data) => {
-		return [
-			// Add your actions here
-			// ...
-		];
-	});
+  faber.setActions((data) => {
+    return [
+      // Add your actions here
+      // ...
+    ];
+  });
 };
 ```
 
@@ -67,9 +69,9 @@ Here is an example of JSON data:
 
 ```json
 {
-	"name": "My Project",
-	"client": "The Client",
-	"isMultilanguage": false
+  "name": "My Project",
+  "client": "The Client",
+  "isMultilanguage": false
 }
 ```
 
@@ -79,7 +81,7 @@ When using the `create` task, the name of the project passed as argument for the
 
 ```js
 {
-	_name: 'my-project';
+  _name: 'my-project';
 }
 ```
 
@@ -107,32 +109,32 @@ Replaces text or patterns on files or glob patterns.
 
 ```js
 faber.setActions((data) => {
-	return [
-		// Replace first occurrence of a string in single file.
-		{
-			type: 'replace',
-			files: 'README.md',
-			from: 'PROJECT_NAME',
-			to: data.projectName,
-		},
-		// Replace all occurrences of multiple strings
-		// in multiple files, using glob patterns,
-		// and defining paths not to change.
-		{
-			type: 'replace',
-			files: ['README.md', 'package.json', 'src/*'],
-			ignore: ['src/node_modules', '.git'],
-			from: [/AUTHOR_NAME/g, /AUTHOR_URI/g],
-			to: [data.authorName, data.authorUri],
-		},
-	];
+  return [
+    // Replace first occurrence of a string in single file.
+    {
+      type: 'replace',
+      files: 'README.md',
+      from: 'PROJECT_NAME',
+      to: data.projectName,
+    },
+    // Replace all occurrences of multiple strings
+    // in multiple files, using glob patterns,
+    // and defining paths not to change.
+    {
+      type: 'replace',
+      files: ['README.md', 'package.json', 'src/*'],
+      ignore: ['src/node_modules', '.git'],
+      from: [/AUTHOR_NAME/g, /AUTHOR_URI/g],
+      to: [data.authorName, data.authorUri],
+    },
+  ];
 });
 ```
 
 #### Considerations
 
--  By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regex pattern with the global flag (like `/something/g`).
--  This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit it's documentation.
+- By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regex pattern with the global flag (like `/something/g`).
+- This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit it's documentation.
 
 ### Move (or Rename)
 
@@ -148,29 +150,29 @@ Can be used to move or rename files and folders.
 
 ```js
 faber.setActions((data) => {
-	return [
-		// Move a single file to another directory
-		{
-			type: 'move',
-			from: 'file.txt',
-			to: 'folder/file.txt',
-		},
-		// Rename a folder and move and rename a file
-		{
-			type: 'move',
-			from: ['folder', 'file.txt'],
-			to: [data.newFolderName, `dir/${data.newFileName}`],
-		},
-	];
+  return [
+    // Move a single file to another directory
+    {
+      type: 'move',
+      from: 'file.txt',
+      to: 'folder/file.txt',
+    },
+    // Rename a folder and move and rename a file
+    {
+      type: 'move',
+      from: ['folder', 'file.txt'],
+      to: [data.newFolderName, `dir/${data.newFileName}`],
+    },
+  ];
 });
 ```
 
 #### Considerations
 
--  When moving a file to another directory, if the destination (`to`) directory doesn't exist yet, it is created automatically.
--  If a file/folder with the destination (`to`) name already exists, the existing one will be **overriden**.
--  If the source (`from`) file/folder doesn't exist, an **error** is thrown.
--  This action uses the [move-file](https://www.npmjs.com/package/move-file) package for renaming files. Please visit its documentation if needed.
+- When moving a file to another directory, if the destination (`to`) directory doesn't exist yet, it is created automatically.
+- If a file/folder with the destination (`to`) name already exists, the existing one will be **overriden**.
+- If the source (`from`) file/folder doesn't exist, an **error** is thrown.
+- This action uses the [move-file](https://www.npmjs.com/package/move-file) package for renaming files. Please visit its documentation if needed.
 
 ### Delete
 
@@ -185,25 +187,25 @@ Deletes files or entire folders by defined paths or glob patterns.
 
 ```js
 faber.setActions((data) => {
-	return [
-		// Delete a single file
-		{
-			type: 'delete',
-			files: 'file.txt',
-		},
-		// Delete files and folders using glob pattern and variable
-		{
-			type: 'delete',
-			files: ['**/*.txt', data.folderToDelete],
-		},
-	];
+  return [
+    // Delete a single file
+    {
+      type: 'delete',
+      files: 'file.txt',
+    },
+    // Delete files and folders using glob pattern and variable
+    {
+      type: 'delete',
+      files: ['**/*.txt', data.folderToDelete],
+    },
+  ];
 });
 ```
 
 #### Considerations
 
--  If the file/folder doesn't exist, it's just ignored.
--  This action uses the [del](https://www.npmjs.com/package/del) package for deleting files/folders. Please visit its documentation if needed.
+- If the file/folder doesn't exist, it's just ignored.
+- This action uses the [del](https://www.npmjs.com/package/del) package for deleting files/folders. Please visit its documentation if needed.
 
 ### Conditionals
 
@@ -221,15 +223,15 @@ Update files' content based on conditional rules. Useful to keep/remove text acc
 
 ```js
 faber.setActions((data) => {
-	return [
-		// Keep/Remove content on single file
-		{
-			type: 'conditional',
-			files: 'file.txt',
-			identifier: 'is-multilanguage',
-			condition: data.isMultiLanguage,
-		},
-	];
+  return [
+    // Keep/Remove content on single file
+    {
+      type: 'conditional',
+      files: 'file.txt',
+      identifier: 'is-multilanguage',
+      condition: data.isMultiLanguage,
+    },
+  ];
 });
 ```
 
@@ -255,9 +257,9 @@ In the last line however, it keeps the `“not”` word when the condition is `f
 
 #### Considerations
 
--  Currently, the only supported commenting styles are block comments like `<!-- -->` and `/* */`:
--  The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
--  The identifier is **required** for both `@faber-if` and `@faber-endif` to the action to work correctly.
+- Currently, the only supported commenting styles are block comments like `<!-- -->` and `/* */`:
+- The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
+- The identifier is **required** for both `@faber-if` and `@faber-endif` to the action to work correctly.
 
 ### Run
 
@@ -273,30 +275,30 @@ Execute shell commands.
 
 ```js
 faber.setActions((data) => {
-	return [
-		// Executes a single command
-		{
-			type: 'run',
-			files: 'echo "Hello World!"',
-		},
-		// Executes multiple commands
-		{
-			type: 'run',
-			files: ['npm i', 'npm run start'],
-		},
-		// Same as above, but using command separators
-		{
-			type: 'run',
-			files: 'npm i && npm run start', // or 'npm i; npm run start'
-		},
-	];
+  return [
+    // Executes a single command
+    {
+      type: 'run',
+      files: 'echo "Hello World!"',
+    },
+    // Executes multiple commands
+    {
+      type: 'run',
+      files: ['npm i', 'npm run start'],
+    },
+    // Same as above, but using command separators
+    {
+      type: 'run',
+      files: 'npm i && npm run start', // or 'npm i; npm run start'
+    },
+  ];
 });
 ```
 
 #### Considerations
 
--  Using **command separators** (`&&` or `;`) has the exact same behavior as using an array with multiple commands. It's just a matter of preference.
--  This action uses the `exec()` function from the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands.
+- Using **command separators** (`&&` or `;`) has the exact same behavior as using an array with multiple commands. It's just a matter of preference.
+- This action uses the `exec()` function from the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands.
 
 ## Commands (CLI)
 
@@ -304,9 +306,9 @@ The CLI has commands to **create** new projects, **test** boilerplates, and also
 
 In a nutshell, you will use:
 
--  `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo**, and then execute the `faber run` command inside it.
--  `faber run` – To execute the configured actions on an boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
--  `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
+- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo**, and then execute the `faber run` command inside it.
+- `faber run` – To execute the configured actions on an boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
+- `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
 
 ### `faber create`
 
@@ -322,13 +324,13 @@ $ faber create my-project --simulate --keep-git --use-existing
 
 `faber create <name>`
 
--  `<name>` – The name for the project root folder.
+- `<name>` – The name for the project root folder.
 
 #### Flags (optional)
 
--  `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
--  `--keep-git` – Prevent removal of the .git folder. Useful to check what has changed on the original boilerplate using git tools.
--  `--use-existing` – Skip the prompt to use existing folder. Useful when working on a boilerplate.
+- `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
+- `--keep-git` – Prevent removal of the .git folder. Useful to check what has changed on the original boilerplate using git tools.
+- `--use-existing` – Skip the prompt to use existing folder. Useful when working on a boilerplate.
 
 #### What it does?
 
@@ -352,10 +354,10 @@ $ faber run --dry --data --no-preview
 
 #### Flags (optional)
 
--  `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
--  `--data` – Encoded JSON data to be passed to the script.
--  `--no-preview` – Do not show the JSON data preview.
--  `--no-results` – Do not show the actions results.
+- `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
+- `--data` – Encoded JSON data to be passed to the script.
+- `--no-preview` – Do not show the JSON data preview.
+- `--no-results` – Do not show the actions results.
 
 #### What it does?
 
@@ -388,9 +390,9 @@ $ faber add my-boilerplate git@github.com:example.git 'My Boilerplate'
 
 `faber add <alias> <repository> [name]`
 
--  `<alias>` (_mandatory_) – Used to reference this boilerplate on other commands. It should consist only of letters, numbers, dashes and underscores.
--  `<repository>` (_mandatory_) – URL to **clone** the repository. It usually ends with `.git`.
--  `[name]` (_optional_) – A name for this boilerplate to display when using the `faber create` command.
+- `<alias>` (_mandatory_) – Used to reference this boilerplate on other commands. It should consist only of letters, numbers, dashes and underscores.
+- `<repository>` (_mandatory_) – URL to **clone** the repository. It usually ends with `.git`.
+- `[name]` (_optional_) – A name for this boilerplate to display when using the `faber create` command.
 
 ### `faber rm`
 
@@ -406,7 +408,7 @@ $ faber rm my-boilerplate
 
 `faber rm <alias>`
 
--  `<alias>` (_mandatory_) – The reference to the boilerpolate to remove from your list.
+- `<alias>` (_mandatory_) – The reference to the boilerpolate to remove from your list.
 
 ## Mentions
 

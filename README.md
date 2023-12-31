@@ -1,24 +1,74 @@
 # Faber CLI
 
-> ⚠ This is a work in progress.
+> ⚠ This is a work in progress. It can already be used for real projects, but have in mind that it's not yet heavily tested.
 
 Faber is a CLI that helps you creating/scaffolding new projects using custom boilerplates.
 
 You can **prepare your own boilerplates** to make them configurable for creating new projects with Faber, and pass custom parameters, data or actions to execute in the scaffolding of your new project.
 
-## Requirements
+## Summary
 
-To use the Faber CLI you will need [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/) on your machine.
+- [Getting Started](#getting-started)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Configuring faberconfig](#configuring-faberconfig)
+- [Passing Data](#passing-data)
+  - [Minified/Encoded JSON](#minifiedencoded-json)
+  - [Reserved Properties](#reserved-properties)
+- [Actions](#actions)
+  - [Replace](#replace)
+  - [Move (or Rename)](#move-or-rename)
+  - [Delete](#delete)
+  - [Conditional](#conditional)
+  - [Run](#run)
+- [Commands (CLI)](#commands-cli)
+  - [Run](#faber-run)
+  - [Create](#faber-create)
+  - [List](#faber-ls)
+  - [Add](#faber-add)
+  - [Remove](#faber-rm)
+
+## Getting Started
+
+### Requirements
+
+To use the Faber CLI, you will need [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/) on your machine.
 
 Your project **doesn't need** to use Node.js for you to use Faber with it. You can use it on boilerplates with any kind of framework or stack.
 
 For being a JS library, Faber configurations are written with **JavaScript**.
 
-## Getting Started
+### Installation
+
+Install the CLI globally on your machine with:
+
+```shell
+npm i -g faber-cli
+```
+
+### Usage
+
+Here is a quick overview of how to use Faber.js on your projects:
+
+If you want to **prepare a boilerplate** for using Faber:
+
+1. Create a [faberconfig](#configuring-faberconfig) file at the root of your boilerplate repository;
+2. Write the [actions](#actions) to be executed on the boilerplate when creating a new project with it;
+3. Prepare the [data](#passing-data) you want to use in your actions;
+4. Test your actions with the [run](#faber-run) CLI command.
+
+If you want to **use an existing boilerplate** to create a new project:
+
+1. Prepare the [data](#passing-data) you want to use for your project as a minified JSON;
+2. Choose a repository of a boilerplate to use as a template;
+3. Use the [create](`faber-create`) CLI command to bootstrap a new project.
+
+### Configuring `faberconfig`
 
 To use Faber CLI in a boilerplate, you need to create a `faberconfig.js` file at the root of your boilerplate project.
 
-Usaully, this file uses the `.js` extension, but depending on your preferences and your project settings (`package.json`, if existing on the project's root) you might want to use a different extension.
+Usually, this file uses the `.js` extension, but depending on your preferences and your project settings (`package.json`, if existing on the project's root) you might want to use a different extension.
 
 To use _CommonJS_, the file must be either:
 
@@ -26,14 +76,12 @@ To use _CommonJS_, the file must be either:
 - `.cjs` with any `type` in your `package.json`.
 - `.js` without having a `package.json` in the root.
 
-To use _ESM_, the file must be eihter:
+To use _ESM_, the file must be either:
 
 - `.js` with `type: "module"` in your `package.json`.
 - `.mjs` with any `type` in your `package.json`.
 
-### Configuring `faberconfig`
-
-See below a basic example for usign _CommonJS_ or _ESM_.
+See below a basic example using _CommonJS_ and _ESM_.
 
 #### CommonJS
 
@@ -61,7 +109,7 @@ export default (faber) => {
 };
 ```
 
-## Data
+## Passing Data
 
 During the `create` and `run` tasks from the CLI, Faber asks for an encoded JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
 
@@ -75,9 +123,26 @@ Here is an example of JSON data:
 }
 ```
 
-### Default parameters
+### Minified/Encoded JSON
 
-When using the `create` task, the name of the project passed as argument for the command (i.e. `faber create my-project`) is added to the data object as the `_name` parameter. While when using the `run` task, it gets the name of the folder where you ran the command.
+There are a few ways to pass the JSON data to the CLI. However, the most recommended way is as a **minified JSON** encoded to **Base64** format.
+
+This guarantees that the JSON data won't break when passing to the command, especially when passed through the `--data` argument.
+
+To encode your JSON, follow these steps:
+
+1. **Minify** the JSON content – suggested online tool: [jsonformatter.org](https://jsonformatter.org/json-minify)
+2. **Encode** the minified JSON to Base64 – suggested online tool: [base64encode.net](https://www.base64encode.net/)
+
+Here is an example of the JSON mentioned above:
+
+```
+eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2UiOmZhbHNlfQ==
+```
+
+### Reserved Properties
+
+When using the `create` task, the name of the project passed as an argument for the command (i.e. `faber create my-project`) is added to the data object as the `_name` parameter. While when using the `run` task, it gets the name of the folder where you ran the command.
 
 ```js
 {
@@ -134,7 +199,8 @@ faber.setActions((data) => {
 #### Considerations
 
 - By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regex pattern with the global flag (like `/something/g`).
-- This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit it's documentation.
+- Consider using **regex boundaries** for more precise replacements, like `/\bNAME\b/g`. This prevents matching strings like `AUTHOR_NAME` when looking for just `NAME`.
+- This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit its documentation.
 
 ### Move (or Rename)
 
@@ -207,7 +273,7 @@ faber.setActions((data) => {
 - If the file/folder doesn't exist, it's just ignored.
 - This action uses the [del](https://www.npmjs.com/package/del) package for deleting files/folders. Please visit its documentation if needed.
 
-### Conditionals
+### Conditional
 
 Update files' content based on conditional rules. Useful to keep/remove text according to conditions with the provided data.
 
@@ -253,13 +319,13 @@ This is /_ @faber-if: !is-multisite _/not /_ @faber-endif: !is-multisite _/a mul
 
 In the above example, the line between the `@faber-if` and `@faber-endif` HTML comments is kept when the condition to the `is-multilanguage` identifier is `true`.
 
-In the last line however, it keeps the `“not”` word when the condition is `false`, using another commenting style (but could be the same style).
+In the last line, however, it keeps the `“not”` word when the condition is `false`, using another commenting style (but could be the same style).
 
 #### Considerations
 
 - Currently, the only supported commenting styles are block comments like `<!-- -->` and `/* */`:
 - The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
-- The identifier is **required** for both `@faber-if` and `@faber-endif` to the action to work correctly.
+- The identifier is **required** for both `@faber-if` and `@faber-endif` for the action to work correctly.
 
 ### Run
 
@@ -306,8 +372,8 @@ The CLI has commands to **create** new projects, **test** boilerplates, and also
 
 In a nutshell, you will use:
 
-- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo**, and then execute the `faber run` command inside it.
-- `faber run` – To execute the configured actions on an boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
+- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo** and then executes the `faber run` command inside it.
+- `faber run` – To execute the configured actions on a boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
 - `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
 
 ### `faber create`
@@ -330,9 +396,9 @@ $ faber create my-project --simulate --keep-git --use-existing
 
 - `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
 - `--keep-git` – Prevent removal of the .git folder. Useful to check what has changed on the original boilerplate using git tools.
-- `--use-existing` – Skip the prompt to use existing folder. Useful when working on a boilerplate.
+- `--use-existing` – Skip the prompt to use the existing folder. Useful when working on a boilerplate.
 
-#### What it does?
+#### What does it do?
 
 1. Clones the boilerplate repository into a new folder with the provided name.
 2. Run the steps from the `faber run` command.
@@ -357,12 +423,12 @@ $ faber run --dry --data --no-preview
 - `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
 - `--data` – Encoded JSON data to be passed to the script.
 - `--no-preview` – Do not show the JSON data preview.
-- `--no-results` – Do not show the actions results.
+- `--no-results` – Do not show the actions' results.
 
-#### What it does?
+#### What does it do?
 
 1. Read the `faberconfig` file from the directory;
-2. Ask for the **encoded JSON data** to pass to the boilerplate (when not privided with the `--data` flag);
+2. Ask for the **encoded JSON data** to pass to the boilerplate (when not provided with the `--data` flag);
 3. Display a **preview of the data** (when not using the `--no-preview` flag);
 4. Execute the **actions** from `faberconfig` (when not using the `--dry` flag);
 
@@ -408,7 +474,7 @@ $ faber rm my-boilerplate
 
 `faber rm <alias>`
 
-- `<alias>` (_mandatory_) – The reference to the boilerpolate to remove from your list.
+- `<alias>` (_mandatory_) – The reference to the boilerplate to remove from your list.
 
 ## Mentions
 

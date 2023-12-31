@@ -59,6 +59,10 @@ export async function handleRunCommand(options) {
 		data = parseJsonData(json);
 	}
 
+	// Add the reserved properties
+	const dirName = shell.pwd().split('/').pop();
+	data._dirName = dirName;
+
 	// Print JSON data preview
 	const hasData = data && typeof data === 'object' && Object.keys(data).length > 0;
 	if (options.preview && data) {
@@ -107,8 +111,6 @@ export async function handleRunCommand(options) {
 		printError('Validation error', 'There are invalid action settings or data.', error);
 		shell.exit(0);
 	}
-
-	//shell.exit(1);
 
 	try {
 		results = await runActions(actions);

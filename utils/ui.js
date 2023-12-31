@@ -150,6 +150,9 @@ export function printDataPreview(data, expanded = false) {
 
 		const prefix = deepness > 0 ? ' '.repeat(deepness - 1) + '∟' : '';
 		let label = Number.isInteger(property) ? `[${colors.bold(property)}]` : colors.bold(property);
+		if (property.startsWith('_')) {
+			label = colors.gray(label);
+		}
 		label = prefix + label;
 
 		switch (type) {

@@ -142,7 +142,7 @@ eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2Ui
 
 ### Reserved Properties
 
-When using the `create` task, the name of the project passed as an argument for the command (i.e. `faber create my-project`) is added to the data object as the `_name` parameter. While when using the `run` task, it gets the name of the folder where you ran the command.
+When using the `create` task, the name of the project passed as an argument for the command (i.e. `faber create my-project`) is added to the data object as the `_dirName` parameter. While when using the `run` task, it gets the name of the folder where you ran the command.
 
 ```js
 {
@@ -394,9 +394,13 @@ $ faber create my-project --simulate --keep-git --use-existing
 
 #### Flags (optional)
 
-- `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
-- `--keep-git` – Prevent removal of the .git folder. Useful to check what has changed on the original boilerplate using git tools.
-- `--use-existing` – Skip the prompt to use the existing folder. Useful when working on a boilerplate.
+- `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning the repository.
+- `--override-existing` (bool) – If the folder already exists, skip the prompt and deletes the existing folder before cloning the repository.
+- `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, uses the default branch (usually named `main` or `master`).
+- `--data` (string) – Encoded JSON data to be passed to the script.
+- `--no-preview` (bool) – Do not show the JSON data preview.
+- `--deep-preview` (bool) – Show the JSON data preview with all the properties and array items expanded.
+- `--no-results` (bool) – Do not show the actions' results.
 
 #### What does it do?
 
@@ -420,10 +424,10 @@ $ faber run --dry --data --no-preview
 
 #### Flags (optional)
 
-- `--dry` – Simulate the actions without making any changes. (_DRY_ stands for **_Don't Run Yet_**).
-- `--data` – Encoded JSON data to be passed to the script.
-- `--no-preview` – Do not show the JSON data preview.
-- `--no-results` – Do not show the actions' results.
+- `--data` (string) – Encoded JSON data to be passed to the script.
+- `--no-preview` (bool) – Do not show the JSON data preview.
+- `--deep-preview` (bool) – Show the JSON data preview with all the properties and array items expanded.
+- `--no-results` (bool) – Do not show the actions' results.
 
 #### What does it do?
 

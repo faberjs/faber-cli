@@ -8,6 +8,9 @@
 	"author": "",
 	"license": "ISC",
 	"type": "module",
+	"scripts": {
+		"test": "echo \"There are no tests to run\" && exit 0"
+	},
 	"dependencies": {
 		"cli-table": "^0.3.11",
 		"colors": "^1.4.0",

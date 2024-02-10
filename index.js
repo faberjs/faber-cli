@@ -7,7 +7,7 @@ import {
 	handleCreateCommand,
 	handleListCommand,
 	handleRemoveCommand,
-	handleRunCommand,
+	handleExecCommand,
 } from './utils/commands.js';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
@@ -45,14 +45,14 @@ program
 	.action(handleCreateCommand);
 
 program
-	.command('run')
+	.command('execute')
 	/* .option('--dry', 'Simulate the actions without making any changes.') */
 	.option('--data <string>', 'Encoded JSON data to be passed to the script')
 	.option('--no-preview', 'Do not show the JSON data preview')
 	.option('--deep-preview', 'Show the JSON data preview with all the properties and array items expanded')
 	.option('--no-results', 'Do not show the actions results')
-	.description('Run the script inside the current repository (usually for development)')
-	.action(handleRunCommand);
+	.description('Executes the script inside the current repository (usually for development)')
+	.action(handleExecCommand);
 
 program.command('ls').description('List your registered boilerplates.').action(handleListCommand);
 

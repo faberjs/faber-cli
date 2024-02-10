@@ -1,8 +1,8 @@
 # Faber CLI
 
-> ⚠ This is a work in progress. It can already be used for real projects, but have in mind that it's not yet heavily tested.
+> ⚠ This is a work in progress. Before the release of version `1.0.0`, please expect things to change at any time.
 
-Faber is a CLI that helps you creating/scaffolding new projects using custom boilerplates.
+Faber is a CLI that helps you create/scaffold new projects using custom boilerplates.
 
 You can **prepare your own boilerplates** to make them configurable for creating new projects with Faber, and pass custom parameters, data or actions to execute in the scaffolding of your new project.
 
@@ -23,7 +23,7 @@ You can **prepare your own boilerplates** to make them configurable for creating
   - [Conditional](#conditional)
   - [Run](#run)
 - [Commands (CLI)](#commands-cli)
-  - [Run](#faber-run)
+  - [Execute](#faber-execute)
   - [Create](#faber-create)
   - [List](#faber-ls)
   - [Add](#faber-add)
@@ -56,7 +56,7 @@ If you want to **prepare a boilerplate** for using Faber:
 1. Create a [faberconfig](#configuring-faberconfig) file at the root of your boilerplate repository;
 2. Write the [actions](#actions) to be executed on the boilerplate when creating a new project with it;
 3. Prepare the [data](#passing-data) you want to use in your actions;
-4. Test your actions with the [run](#faber-run) CLI command.
+4. Test your actions with the [execute](#faber-execute) CLI command.
 
 If you want to **use an existing boilerplate** to create a new project:
 
@@ -111,7 +111,7 @@ export default (faber) => {
 
 ## Passing Data
 
-During the `create` and `run` tasks from the CLI, Faber asks for an encoded JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
+During the `create` and `execute` tasks from the CLI, Faber asks for minified (optionally encoded) JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
 
 Here is an example of JSON data:
 
@@ -142,11 +142,11 @@ eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2Ui
 
 ### Reserved Properties
 
-When using the `create` task, the name of the project passed as an argument for the command (i.e. `faber create my-project`) is added to the data object as the `_dirName` parameter. While when using the `run` task, it gets the name of the folder where you ran the command.
+When using the `create` task, the name of the project passed as an argument for the command (i.e. `faber create my-project`) is added to the data object as the `_dirName` parameter. Similarly, when using the `execute` task, it gets the name of the folder where you are running the command.
 
 ```js
 {
-  _name: 'my-project';
+  _dirName: 'my-project';
 }
 ```
 
@@ -154,7 +154,7 @@ When using the `create` task, the name of the project passed as an argument for 
 
 Actions are defined on the `faberconfig` file of the boilerplate using the `faber.setActions()` function.
 
-You can use the **project's data** from the provided JSON (requested at `faber create` or `faber run` commands) on any action.
+You can use the **project's data** from the provided JSON (requested at `faber create` or `faber execute` commands) on any action.
 
 See below the available actions that you can use:
 
@@ -329,12 +329,12 @@ In the last line, however, it keeps the `“not”` word when the condition is `
 
 ### Run
 
-Execute shell commands.
+Run shell commands.
 
 | Property   | Type              | Required | Description                                                                                  |
 | ---------- | ----------------- | -------- | -------------------------------------------------------------------------------------------- |
 | `type`     | _String_          | Yes      | Should be `'run'` for this action.                                                           |
-| `commands` | _String,[String]_ | Yes      | Command(s) to execute sequentially.                                                          |
+| `commands` | _String,[String]_ | Yes      | Command(s) to run sequentially.                                                              |
 | `silent`   | _Boolean_         | No       | If `false`, logs the command(s) output on the console. Default is `true` (omits the output). |
 
 #### Usage examples
@@ -342,20 +342,20 @@ Execute shell commands.
 ```js
 faber.setActions((data) => {
   return [
-    // Executes a single command
+    // Runs a single command
     {
       type: 'run',
-      files: 'echo "Hello World!"',
+      command: 'echo "Hello World!"',
     },
-    // Executes multiple commands
+    // Runs multiple commands
     {
       type: 'run',
-      files: ['npm i', 'npm run start'],
+      command: ['npm i', 'npm run start'],
     },
     // Same as above, but using command separators
     {
       type: 'run',
-      files: 'npm i && npm run start', // or 'npm i; npm run start'
+      command: 'npm i && npm run start', // or 'npm i; npm run start'
     },
   ];
 });
@@ -363,7 +363,7 @@ faber.setActions((data) => {
 
 #### Considerations
 
-- Using **command separators** (`&&` or `;`) has the exact same behavior as using an array with multiple commands. It's just a matter of preference.
+- Using **command separators** (`&&` or `;`) has the same behavior as using an array with multiple commands. It's just a matter of preference.
 - This action uses the `exec()` function from the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands.
 
 ## Commands (CLI)
@@ -372,8 +372,8 @@ The CLI has commands to **create** new projects, **test** boilerplates, and also
 
 In a nutshell, you will use:
 
-- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo** and then executes the `faber run` command inside it.
-- `faber run` – To execute the configured actions on a boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
+- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo** and then executes the `faber execute` command inside it.
+- `faber execute` – To execute the configured actions on a boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
 - `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
 
 ### `faber create`
@@ -383,7 +383,7 @@ Creates a new project with a pre-configured boilerplate.
 #### Usage example
 
 ```shell
-$ faber create my-project --simulate --keep-git --use-existing
+$ faber create my-project --branch=main --use-existing
 ```
 
 #### Arguments
@@ -405,21 +405,21 @@ $ faber create my-project --simulate --keep-git --use-existing
 #### What does it do?
 
 1. Clones the boilerplate repository into a new folder with the provided name.
-2. Run the steps from the `faber run` command.
+2. Run the steps from the `faber execute` command.
 3. Deletes the `.git` folder from the repository (when not using the `--keep-git` flag);
 
-> **Notice**: You need to have permission to read from the boilerplate repository. When using private repositories, you need to authenticate via SSH or HTTPS as normally.
+> **Notice**: You need to have permission to read from the boilerplate repository. When using private repositories, you need to authenticate via SSH or HTTPS as you normally would when cloning.
 
-### `faber run`
+### `faber execute`
 
-Run the configured actions on the current directory. Useful for development.
+Executes the configured actions on the current directory. Useful for development.
 
 > A `faberconfig` file should be present on the directory.
 
 #### Usage example
 
 ```shell
-$ faber run --dry --data --no-preview
+$ faber execute --dry --data --no-preview
 ```
 
 #### Flags (optional)
@@ -482,6 +482,8 @@ $ faber rm my-boilerplate
 
 ## Mentions
 
-This documentation was highly inspired by the [Plop](https://plopjs.com/) documentation.
+This documentation was inspired by the [Plop](https://plopjs.com/) documentation.
 
-_Plop_ is an amazing framework with a similar goal as _Faber_, however, while _Plop_ is amazing for generating code inside your project, _Faber_ is fully focused on starting new projects. (_P.S. You can use both together in your boilerplate_ 😉)
+_Plop_ is an amazing micro-framework with a similar goal as _Faber_, however, while _Plop_ is great for generating code inside your project using [Handlebars](https://handlebarsjs.com/) as template engine, _Faber_ is fully focused on starting new projects, with no defined template engine, so you might be able to run the boilerplate project on its own for testing its features with your own.
+
+_P.S. You can use both together in your projects to make your life easier._ 😉

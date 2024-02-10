@@ -22,13 +22,11 @@ export function validateActions(actions) {
 	const availableActions = ['replace', 'conditional', 'move', 'delete', 'run'];
 	actions.forEach((action, index) => {
 		if (!action.hasOwnProperty('type')) {
-			// Check if the action type is defined
-			throw new Error(`The \`${colors.cyan(`type`)}\` property is required for each action.`);
+			throwActionError(index, action, 'validation', `\`${action.type.bold}\` property not found on action`);
 		}
 
 		if (!availableActions.includes(action.type)) {
-			// Check if the action type is valid
-			throw new Error(`\`${colors.cyan(action.type)}\` is not a valid action type.`);
+			throwActionError(index, action, 'validation', `\`${action.type.bold}\` is not a valid action type`);
 		}
 
 		switch (action.type) {
@@ -46,7 +44,7 @@ export function validateActions(actions) {
 
 					// Validates settings for the `replace` action
 					const results = schema.validate(action);
-					results.error && throwError(index, action, results.error.message);
+					results.error && throwActionError(index, action, 'validation', results.error.message);
 				})();
 				break;
 
@@ -62,7 +60,7 @@ export function validateActions(actions) {
 
 					// Validates settings for the `conditional` action
 					const results = schema.validate(action);
-					results.error && throwError(index, action, results.error.message);
+					results.error && throwActionError(index, action, 'validation', results.error.message);
 				})();
 				break;
 
@@ -75,7 +73,7 @@ export function validateActions(actions) {
 
 					// Validates settings for the `delete` action
 					const results = schema.validate(action);
-					results.error && throwError(index, action, results.error.message);
+					results.error && throwActionError(index, action, 'validation', results.error.message);
 				})();
 				break;
 
@@ -89,7 +87,7 @@ export function validateActions(actions) {
 
 					// Validates settings for the `move` action
 					const results = schema.validate(action);
-					results.error && throwError(index, action, results.error.message);
+					results.error && throwActionError(index, action, 'validation', results.error.message);
 				})();
 				break;
 
@@ -103,7 +101,7 @@ export function validateActions(actions) {
 
 					// Validates settings for the `run` action
 					const results = schema.validate(action);
-					results.error && throwError(index, action, results.error.message);
+					results.error && throwActionError(index, action, 'validation', results.error.message);
 				})();
 				break;
 
@@ -112,17 +110,22 @@ export function validateActions(actions) {
 		}
 
 		/**
-		 * Throws an error with the action index and type.
+		 * Prints an error message with action details
 		 * @param {number} index The action index.
 		 * @param {string} action The action type.
+		 * @param {string} context The error context.
 		 * @param {string} message The error message.
 		 */
-		function throwError(index, action, message) {
-			throw new Error(
-				`On action [${colors.cyan(`${index}`)}] (of type \`${colors.cyan(action.type)}\`) - ` +
-					adaptJoiMessage(message) +
-					'.' // TODO: Add link to documentation
+		function throwActionError(index, action, context, message) {
+			let label = '[ERROR] '.red.bold;
+			context && (label += `(${context}): `);
+			console.error(
+				label + adaptJoiMessage(message) + '.' // TODO: Add link to documentation
 			);
+			console.warn('\nAction details:'.gray);
+			console.dir(action);
+			console.log();
+			process.exit(1);
 		}
 	});
 
@@ -248,7 +251,7 @@ export async function runActions(actions) {
 									});
 								}
 
-								// Execute each command
+								// Run each command
 								for (let i = 0; i < commands.length; i++) {
 									const command = commands[i].trim();
 									const shellResults = await shell.exec(command, {

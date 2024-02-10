@@ -19,10 +19,10 @@ import {
 import { existsSync } from 'fs';
 
 /**
- * Handles the `run` command.
+ * Handles the `execute` command.
  * @param {object} options - The command options object.
  */
-export async function handleRunCommand(options) {
+export async function handleExecCommand(options) {
 	// Check if faberconfig file exists
 	if (!existsSync(getAbsolutePath('faberconfig.js'))) {
 		const pwd = shell.pwd();
@@ -189,7 +189,7 @@ export async function handleCreateCommand(name, options) {
 
 	// Continue with the `run` command
 	shell.cd(name);
-	await handleRunCommand(options);
+	await handleExecCommand(options);
 }
 
 /**

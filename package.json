@@ -1,6 +1,6 @@
 {
 	"name": "faber-cli",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "",
 	"exports": "./index.js",
 	"node": ">=14.16",

@@ -192,6 +192,7 @@ export async function handleCreateCommand(name, options) {
 	await handleExecCommand(options);
 }
 
+const addArgs = '<alias> <repo> [name]';
 /**
  * Handles the `add` command.
  * @param {string} alias - The alias of the boilerplate.
@@ -258,7 +259,7 @@ export async function handleListCommand() {
 		const boilerplates = await getBoilerplates();
 		if (!boilerplates.length) {
 			printMsg('There are no boilerplates to list\n', 'error');
-			printMsg(`You can add a boilerplate with: faber add ${addArgs}\n`, 'info');
+			printMsg(`Tip: You can add a boilerplate with: \n${colors.cyan(`faber add ` + addArgs)}\n`, 'info', '');
 			return;
 		}
 

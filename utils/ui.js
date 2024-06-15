@@ -62,11 +62,7 @@ export function printTable(headers, rows) {
  * @param {object[]} boilerplates The list of registered boilerplates.
  */
 export function printBoilerplatesTable(boilerplates) {
-	const headers = [
-		colors.cyan.bold('Boilerplate'),
-		colors.cyan.bold('Repository URL'),
-		colors.cyan.bold('Display Name'),
-	];
+	const headers = [colors.cyan.bold('Alias'), colors.cyan.bold('Repository URL'), colors.cyan.bold('Display Name')];
 	const rows = boilerplates.map((b) => [b.alias, b.repo, b.name === '' ? colors.gray('undefined') : b.name]);
 	printTable(headers, rows);
 }

@@ -6,6 +6,8 @@ import Joi from 'joi';
 import { deleteAsync } from 'del';
 import { moveFile } from 'move-file';
 import { getRelativePath, getAbsolutePath } from './files.js';
+import { printMsg } from './ui.js';
+import { getConditionalCommentPatterns } from './regex.js';
 
 /**
  * Validates the actions object.
@@ -254,9 +256,11 @@ export async function runActions(actions) {
 								// Run each command
 								for (let i = 0; i < commands.length; i++) {
 									const command = commands[i].trim();
-									const shellResults = await shell.exec(command, {
-										silent: action.hasOwnProperty('silent') ? action.silent : true,
-									});
+									const silent = action.silent || true;
+									if (!silent) printMsg(`Running command: ${colors.magenta(command)}`, 'muted', '$');
+									const shellResults = /^cd /.test(command)
+										? await shell.cd(command.replace('cd ', ''), { silent })
+										: await shell.exec(command, { silent });
 									if (shellResults.code === 0) {
 										results.push({
 											action: index + 1,
@@ -304,43 +308,21 @@ async function runReplacements(files, ignore, from, to) {
 	});
 }
 
-async function runConditionals(files, identifier, condition) {
-	const comments = [
-		['\\/\\*\\*?', '*/'],
-		['<!--', '-->'],
-		['\\/\\/\\/?', 0],
-		['##?', 0],
-		['=begin', '=end'],
-		['"""', '"""'],
-		["'''", "'''"],
-	];
-	const openings = `((?:\\/\\*\\*?)|(?:<!--))`;
-	const closures = `((?:\\*?\\*\\/)|(?:-->))`;
-
-	const positivePattern = new RegExp(
-		openings +
-			' ?@faber-if: ?(' +
-			(condition ? identifier : `! ?${identifier}`) +
-			') ?' +
-			closures +
-			'\\n?((.|\\n)*?)\\1 ?@faber-endif: ?\\2 ?\\3\\n?',
-		'g'
-	);
-	const negativePattern = new RegExp(
-		openings +
-			' ?@faber-if: ?(' +
-			(condition ? `! ?${identifier}` : identifier) +
-			') ?' +
-			closures +
-			'\\n?((.|\\n)*?)\\1 ?@faber-endif: ?\\2 ?\\3\\n?',
-		'g'
-	);
+async function runConditionals(files, ignore, identifier, condition) {
+	const { positivePatterns, negativePatterns } = getConditionalCommentPatterns(identifier, condition);
 
 	return new Promise(async (resolve, reject) => {
 		try {
-			const resultsTrue = await replace({ files, from: positivePattern, to: '$4', countMatches: true });
-			const resultsFalse = await replace({ files, from: negativePattern, to: '', countMatches: true });
-			resolve([...resultsTrue, ...resultsFalse]);
+			const results = [];
+			for (const positivePattern of positivePatterns) {
+				const res = await replace({ files, from: positivePattern, to: '$1', countMatches: true, ignore });
+				results.push(res);
+			}
+			for (const negativePattern of negativePatterns) {
+				const res = await replace({ files, from: negativePattern, to: '', countMatches: true, ignore });
+				results.push(res);
+			}
+			resolve(results);
 		} catch (err) {
 			reject(err);
 		}
@@ -359,6 +341,7 @@ async function runMoving(from, to) {
 				for (const [index, fromPath] of from.entries()) {
 					const alreadyExists = fs.existsSync(getAbsolutePath(to[index]));
 					await moveFile(fromPath, to[index]);
+					//await fs.promises.rename(fromPath, to[index]);
 					const moved = fs.existsSync(getAbsolutePath(to[index]));
 					if (from !== to && moved) {
 						results.push({

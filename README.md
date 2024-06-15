@@ -35,16 +35,16 @@ You can **prepare your own boilerplates** to make them configurable for creating
 
 To use the Faber CLI, you will need [Node.js](https://nodejs.org/) and [NPM](https://www.npmjs.com/) on your machine.
 
-Your project **doesn't need** to use Node.js for you to use Faber with it. You can use it on boilerplates with any kind of framework or stack.
+Your project **doesn't need** to use Node.js for you to use Faber with it. You can use it on boilerplates with any kind of framework or stack. Once the project is created, Faber's work is done.
 
-For being a JS library, Faber configurations are written with **JavaScript**.
+However, for being a JS library, Faber configurations are currently written with **JavaScript**.
 
 ### Installation
 
 Install the CLI globally on your machine with:
 
 ```shell
-npm i -g faber-cli
+npm install -g faber-cli
 ```
 
 ### Usage
@@ -364,7 +364,8 @@ faber.setActions((data) => {
 #### Considerations
 
 - Using **command separators** (`&&` or `;`) has the same behavior as using an array with multiple commands. It's just a matter of preference.
-- This action uses the `exec()` function from the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands.
+- When changing directories (i.e. `cd path/to/folder`) the next actions will run at the new current directory;
+- This action uses the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands, using the `exec()` function for running the commands, and the `cd()` function for `cd` commands (to change directory).
 
 ## Commands (CLI)
 

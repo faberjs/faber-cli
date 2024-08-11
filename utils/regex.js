@@ -13,7 +13,7 @@ export function escapeRegExp(string) {
  * @param {string} expression The regular expression string to add optional space around.
  */
 export function optionalSpaceAround(expression) {
-	return `\\s*${expression}\\s*`;
+	return `[ \t]*${expression}[ \t]*`;
 }
 
 /**
@@ -22,7 +22,7 @@ export function optionalSpaceAround(expression) {
  * @param {string} expression The regular expression string to add optional space before.
  */
 export function optionalSpaceBefore(expression) {
-	return `\\s*${expression}`;
+	return `[ \t]*${expression}`;
 }
 
 /**
@@ -31,7 +31,7 @@ export function optionalSpaceBefore(expression) {
  * @param {string} expression The regular expression string to add optional space after.
  */
 export function optionalSpaceAfter(expression) {
-	return `${expression}\\s*`;
+	return `${expression}[ \t]*`;
 }
 
 /**
@@ -43,8 +43,12 @@ export function optionalSpaceAfter(expression) {
  */
 export function getConditionalCommentPatterns(identifier, condition) {
 	const commentingPatterns = [
-		['\\/\\*\\*?', '\\*\\/\\n?'],
-		['<!--', '-->\\n?'],
+		[`\\/\\*\\*?`, `\\*\\/\\n?`],
+		[`<!--`, `-->\\n?`],
+		[`'''`, `'''\\n?`],
+		[`"""`, `"""\\n?`],
+		[`///?`, `(?:\\n|$)`],
+		[`#`, `(?:\\n|$)`],
 	];
 
 	const positivePatterns = [];

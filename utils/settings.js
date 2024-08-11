@@ -1,7 +1,7 @@
 import { directory as homeDir } from 'home-dir';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
-const settingsFilePath = `${homeDir}/.faberconfig`;
+const settingsFilePath = `${homeDir}/.fabersettings.json`;
 
 export async function getSettings() {
 	if (!existsSync(settingsFilePath)) return {};

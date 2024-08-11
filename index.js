@@ -12,6 +12,8 @@ import {
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
 
+process.env.ROOT_DIRECTORY = process.cwd();
+
 program
 	.name('faber')
 	.description('A CLI for creating projects from custom boilerplates.')

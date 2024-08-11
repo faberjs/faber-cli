@@ -236,50 +236,17 @@ export async function runActions(actions) {
 							break;
 						case 'run':
 							try {
-								const commands = [];
-
-								// List all commands
-								if (Array.isArray(action.command)) {
-									action.command.forEach((command) => {
-										const subcommands = command.split(/&&|;/g);
-										subcommands.forEach((subcommand) => {
-											commands.push(subcommand.trim());
-										});
-									});
-								} else if (typeof action.command === 'string') {
-									const subcommands = action.command.split(/&&|;/g);
-									subcommands.forEach((subcommand) => {
-										commands.push(subcommand.trim());
-									});
-								}
-
-								// Run each command
-								for (let i = 0; i < commands.length; i++) {
-									const command = commands[i].trim();
-									const silent = action.silent || true;
-									if (!silent) printMsg(`Running command: ${colors.magenta(command)}`, 'muted', '$');
-									const shellResults = /^cd /.test(command)
-										? await shell.cd(command.replace('cd ', ''), { silent })
-										: await shell.exec(command, { silent });
-									if (shellResults.code === 0) {
-										results.push({
+								const commandsResults = await runCommands(action.command, action.silent);
+								results = results.concat(
+									commandsResults.map((executed) => {
+										return {
 											action: index + 1,
 											type: action.type,
-											command: command,
-											result: {
-												code: shellResults.code,
-												stdout: shellResults.stdout,
-												stderr: shellResults.stderr,
-											},
-										});
-									} else {
-										reject(
-											`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${
-												shellResults.stderr
-											}`
-										);
-									}
-								}
+											command: executed.command,
+											result: executed.result,
+										};
+									})
+								);
 							} catch (err) {
 								reject(
 									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
@@ -313,16 +280,33 @@ async function runConditionals(files, ignore, identifier, condition) {
 
 	return new Promise(async (resolve, reject) => {
 		try {
-			const results = [];
+			let results = [];
 			for (const positivePattern of positivePatterns) {
 				const res = await replace({ files, from: positivePattern, to: '$1', countMatches: true, ignore });
-				results.push(res);
+				results = [...results, ...res];
 			}
 			for (const negativePattern of negativePatterns) {
 				const res = await replace({ files, from: negativePattern, to: '', countMatches: true, ignore });
-				results.push(res);
+				results = [...results, ...res];
 			}
-			resolve(results);
+			let uniqueResults = results.reduce((acc, res) => {
+				if (acc[res.file]) {
+					acc[res.file].numReplacements += res.numReplacements;
+					acc[res.file].numMatches += res.numMatches;
+					acc[res.file].hasChanged = acc[res.file].hasChanged || res.hasChanged;
+					return acc;
+				} else {
+					acc[res.file] = {
+						file: res.file,
+						numReplacements: res.numReplacements,
+						numMatches: res.numMatches,
+						hasChanged: res.hasChanged,
+					};
+					return acc;
+				}
+			}, {});
+
+			resolve(Object.values(uniqueResults));
 		} catch (err) {
 			reject(err);
 		}
@@ -372,9 +356,67 @@ async function runMoving(from, to) {
 	});
 }
 
+function runCommands(commands, silent = true) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const results = [];
+
+			// List all commands
+			const commandsToRun = [];
+			if (Array.isArray(commands)) {
+				commands.forEach((command) => {
+					const subcommands = command.split(/&&|;/g);
+					subcommands.forEach((subcommand) => {
+						commandsToRun.push(subcommand.trim());
+					});
+				});
+			} else if (typeof commands === 'string') {
+				const subcommands = commands.split(/&&|;/g);
+				subcommands.forEach((subcommand) => {
+					commandsToRun.push(subcommand.trim());
+				});
+			}
+
+			// Run each command
+			for (let i = 0; i < commandsToRun.length; i++) {
+				const command = commandsToRun[i].trim();
+				if (!silent) {
+					console.log('');
+					printMsg(`Running command: ${colors.magenta(command)}`, 'muted', '$');
+				}
+				const shellResults = /^cd /.test(command)
+					? await shell.cd(command.replace('cd ', ''))
+					: await shell.exec(command, { silent });
+				if (shellResults.code === 0) {
+					results.push({
+						command,
+						result: {
+							code: shellResults.code,
+							stdout: shellResults.stdout,
+							stderr: shellResults.stderr,
+						},
+					});
+					await returnToRootDirectory();
+				} else {
+					await returnToRootDirectory();
+					reject(shellResults.stderr);
+				}
+			}
+
+			resolve(results);
+		} catch (err) {
+			reject(err);
+		}
+	});
+}
+
 function adaptJoiMessage(message) {
 	const coloredProperty = colors.cyan('$1');
 	return message
 		.replace(/"(\w+)" is/, `The \`${coloredProperty}\` property is`)
 		.replace(/"(\w+)" must be/, `The \`${coloredProperty}\` property must be`);
+}
+
+async function returnToRootDirectory() {
+	shell.cd(process.env.ROOT_DIRECTORY);
 }

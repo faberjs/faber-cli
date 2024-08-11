@@ -14,7 +14,8 @@ You can **prepare your own boilerplates** to make them configurable for creating
   - [Usage](#usage)
   - [Configuring faberconfig](#configuring-faberconfig)
 - [Passing Data](#passing-data)
-  - [Minified/Encoded JSON](#minifiedencoded-json)
+  - [Encoded JSON (recommended)](#encoded-json-recommended)
+  - [Minified JSON](#minified-json-less-reliable)
   - [Reserved Properties](#reserved-properties)
 - [Actions](#actions)
   - [Replace](#replace)
@@ -72,13 +73,13 @@ Usually, this file uses the `.js` extension, but depending on your preferences a
 
 To use _CommonJS_, the file must be either:
 
-- `.js` with `type: "commonjs"` in your `package.json`.
+- `.js` with `type: "commonjs"` in your `package.json`;
 - `.cjs` with any `type` in your `package.json`.
-- `.js` without having a `package.json` in the root.
+- `.js` without having a `package.json` in the root;
 
 To use _ESM_, the file must be either:
 
-- `.js` with `type: "module"` in your `package.json`.
+- `.js` with `type: "module"` in your `package.json`;
 - `.mjs` with any `type` in your `package.json`.
 
 See below a basic example using _CommonJS_ and _ESM_.
@@ -111,7 +112,7 @@ export default (faber) => {
 
 ## Passing Data
 
-During the `create` and `execute` tasks from the CLI, Faber asks for minified (optionally encoded) JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
+During the `faber create` and `faber execute` commands, the CLI asks for minified (optionally encoded) JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
 
 Here is an example of JSON data:
 
@@ -123,22 +124,49 @@ Here is an example of JSON data:
 }
 ```
 
-### Minified/Encoded JSON
+### Encoded JSON (recommended)
 
-There are a few ways to pass the JSON data to the CLI. However, the most recommended way is as a **minified JSON** encoded to **Base64** format.
+There are a few ways to pass the JSON data to your `faberconfig` file. The recommended is using a **base64 encoded** JSON.
 
-This guarantees that the JSON data won't break when passing to the command, especially when passed through the `--data` argument.
+Encoding guarantees its consistency and allows you to use the same value for both the CLI input or as command argument.
 
-To encode your JSON, follow these steps:
+It might be good to **minify** the JSON before encoding it, to generate a smaller string.
 
-1. **Minify** the JSON content – suggested online tool: [jsonformatter.org](https://jsonformatter.org/json-minify)
-2. **Encode** the minified JSON to Base64 – suggested online tool: [base64encode.net](https://www.base64encode.net/)
+> You can use online tools like [jsonformatter.org](https://jsonformatter.org/json-minify) to minify the JSON, and [base64encode.net](https://www.base64encode.net/) to encode it.
 
-Here is an example of the JSON mentioned above:
+Here is an example of a base64 encoded JSON:
 
 ```
 eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2UiOmZhbHNlfQ==
 ```
+
+### Minified JSON (less reliable)
+
+Although we encourage using the encoding approach, you can also pass the JSON just **minified**. It might be easier than encoding depending on your workflow, but has some limitations:
+
+#### When asked by CLI
+
+By default, the CLI will prompt you to paste the JSON data during its execution.
+
+if not encoded, the JSON must be at least **minified** (with no line breaks), as in the example below:
+
+```shell
+$ Paste the project data: {"name":"My Project","client":"The Client","isMultilanguage":false}
+```
+
+> You can use an online tool like [jsonformatter.org](https://jsonformatter.org/json-minify) to minify the JSON.
+
+#### Using `--data` argument
+
+If you prefer to pass the data directly in the terminal via command, you can use the `--data` argument, passing the JSON as its value.
+
+In this case, if not encoded, the JSON must be **minified** and then **stringified** (to be correctly interpreted by the terminal), as in the example below:
+
+```shell
+faber create --data "{\"name\":\"My Project\",\"client\":\"The Client\",\"isMultilanguage\":false}"
+```
+
+> You can use an online tool like **jsonformatter.org** to [minify](https://jsonformatter.org/json-minify) and then [stringify](https://jsonformatter.org/json-stringify-online) the JSON.
 
 ### Reserved Properties
 
@@ -303,29 +331,48 @@ faber.setActions((data) => {
 
 On the file content, you can wrap the block of content to keep/remove with **Faber conditional comments**.
 
-Here are some examples:
-
-```markdown
-This is a file with instruction of the project.
+```html
+This is a file with instructions of the project.
 
 <!-- @faber-if: is-multilanguage -->
-
-This line is only added if the condition is true.
+This paragraph is only kept if the condition is truthy.
 
 <!-- @faber-endif: is-multilanguage -->
-
-This is /_ @faber-if: !is-multisite _/not /_ @faber-endif: !is-multisite _/a multi language project.
 ```
 
-In the above example, the line between the `@faber-if` and `@faber-endif` HTML comments is kept when the condition to the `is-multilanguage` identifier is `true`.
+In the above example, the 2 lines between the `@faber-if` and `@faber-endif` HTML comments are **kept** when the condition to the `is-multilanguage` identifier is `true`, and **deleted** when the condition is `false`.
 
-In the last line, however, it keeps the `“not”` word when the condition is `false`, using another commenting style (but could be the same style).
+#### Negative match
+
+```css
+This prints the /* @faber-if: !is-multisite */not /* @faber-endif: !is-multisite */word if the condition is falsy.
+```
+
+In this example, by prefixing the identifier with an exclamation mark (`!`), we invert the rule, **keeping** the `not` word when the condition is `false` and **deleting** it when `true`.
+
+#### Supported comments
+
+Currently, you can use the following commenting styles for conditional replacements:
+
+- Block comments:
+  - `<!--` `-->`
+  - `/**` `*/`
+  - `/*` `*/`
+  - `'''` `'''`
+  - `"""` `"""`
+- Line comments:
+  - `//`
+  - `///`
+  - `#`
 
 #### Considerations
 
-- Currently, the only supported commenting styles are block comments like `<!-- -->` and `/* */`:
-- The comments should start with `@faber-if:` (for the beginning) and `@faber-endif:` (for the end).
-- The identifier is **required** for both `@faber-if` and `@faber-endif` for the action to work correctly.
+- The conditional content is everything between the `@faber-if: identifier` and `@faber-endif: identifier` comments;
+- The identifier is **required** for both `@faber-if` and `@faber-endif` for the action to work correctly;
+- There is no `@faber-else` logic yet;
+- The identifier is **not a variable**, it's just a string that links the conditional blocks to the configured action;
+- You can have multiple blocks using the **same identifier** for the condition;
+- Prefix the identifier with an exclamation mark `!` to keep the block when the condition is false;
 
 ### Run
 
@@ -345,7 +392,13 @@ faber.setActions((data) => {
     // Runs a single command
     {
       type: 'run',
+      command: 'mkdir testing',
+    },
+    // Runs command without silent mode
+    {
+      type: 'run',
       command: 'echo "Hello World!"',
+      silent: false,
     },
     // Runs multiple commands
     {
@@ -361,10 +414,37 @@ faber.setActions((data) => {
 });
 ```
 
+#### Changing directory
+
+Each `run` action is executed at the **initial directory**, where `faberconfig` is found.
+
+When a `cd` command is used to change the current directory, this navigation persists only within the current action, to the next commands from the same action.
+
+When a `run` action completes, the `cd` navigation is restored to the initial directory for the next action.
+
+See the example below:
+
+```js
+[
+  // Creates a directory `foo` at ./subfolder
+  {
+    type: 'run',
+    command: ['cd subfolder', 'mkdir foo'], // or using && intead
+  },
+  // Creates a directory `bar` at ./
+  // ignoring navigation from previous actions
+  {
+    type: 'run',
+    command: 'mkdir bar',
+  },
+];
+```
+
 #### Considerations
 
-- Using **command separators** (`&&` or `;`) has the same behavior as using an array with multiple commands. It's just a matter of preference.
-- When changing directories (i.e. `cd path/to/folder`) the next actions will run at the new current directory;
+- Using **command separators** (`&&` or `;`) has the same behavior as using an array with multiple commands. It's just a matter of preference;
+- When **changing directories** (i.e. `cd path/to/folder`), the navigation persists for other commands in the current action;
+- By default, **nothing is logged** from the executed commands. To display the commands' output in the terminal, set the `silent` option as `false`;
 - This action uses the [shelljs](https://www.npmjs.com/package/shelljs) library for executing the commands, using the `exec()` function for running the commands, and the `cd()` function for `cd` commands (to change directory).
 
 ## Commands (CLI)
@@ -373,39 +453,50 @@ The CLI has commands to **create** new projects, **test** boilerplates, and also
 
 In a nutshell, you will use:
 
-- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo** and then executes the `faber execute` command inside it.
-- `faber execute` – To execute the configured actions on a boilerplate. When working on the boilerplate actions, you can use this command to test the actions you are developing.
+- `faber create` – To create new projects from a pre-configured boilerplate. This command **clones the repo** and then executes the `faber execute` command inside of it.
+- `faber execute` – To execute the configured actions on the current folder. When preparing a boilerplate, you can use this command to test the actions you are writing.
 - `faber ls|add|rm` – To manage aliases to your boilerplates for ease of usage when using the `faber create` command.
 
 ### `faber create`
 
-Creates a new project with a pre-configured boilerplate.
+Creates a new project using a pre-configured boilerplate.
 
 #### Usage example
 
 ```shell
-$ faber create my-project --branch=main --use-existing
+$ faber create my-project
+```
+
+Including URL to clone repository and other flags:
+
+```shell
+$ faber create my-project https://github.com/path/example.git --branch main --use-existing
 ```
 
 #### Arguments
 
-`faber create <name>`
+`faber create <name> [clone_url]`
 
 - `<name>` – The name for the project root folder.
+- `[clone_url]` – The URL for cloning the repository (can be SSL or HTTPS, depending on your permissions and authentication)
 
 #### Flags (optional)
 
 - `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning the repository.
-- `--override-existing` (bool) – If the folder already exists, skip the prompt and deletes the existing folder before cloning the repository.
-- `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, uses the default branch (usually named `main` or `master`).
-- `--data` (string) – Encoded JSON data to be passed to the script.
-- `--no-preview` (bool) – Do not show the JSON data preview.
-- `--deep-preview` (bool) – Show the JSON data preview with all the properties and array items expanded.
-- `--no-results` (bool) – Do not show the actions' results.
+- `--override-existing` (bool) – If the folder already exists, skip the prompt and delete the existing folder before cloning the repository.
+- `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, use the default branch (usually named `main` or `master`).
+- `--keep-git` (bool) – Does not delete the existing Git history from the new cloned folder.
+
+Also includes all flags available to the `faber execute` command:
+
+- `--data` (string) – JSON data to be passed to the script.
+- `--no-preview` (bool) – Does not show the JSON data preview.
+- `--deep-preview` (bool) – Shows the JSON data preview with all the properties and array items expanded.
+- `--no-results` (bool) – Does not show the actions' results.
 
 #### What does it do?
 
-1. Clones the boilerplate repository into a new folder with the provided name.
+1. Clones the boilerplate repository in the current directory into a new folder with the provided name.
 2. Run the steps from the `faber execute` command.
 3. Deletes the `.git` folder from the repository (when not using the `--keep-git` flag);
 
@@ -413,19 +504,25 @@ $ faber create my-project --branch=main --use-existing
 
 ### `faber execute`
 
-Executes the configured actions on the current directory. Useful for development.
+Executes the configured actions on the current directory. Useful for configuring and testing actions.
 
-> A `faberconfig` file should be present on the directory.
+> A [faberconfig](#configuring-faberconfig) file should be present on the directory.
 
-#### Usage example
+#### Usage examples
 
 ```shell
-$ faber execute --dry --data --no-preview
+$ faber execute
+```
+
+Including JSON data and other flags:
+
+```shell
+$ faber execute --data "{title:\"Example\"}" --no-preview
 ```
 
 #### Flags (optional)
 
-- `--data` (string) – Encoded JSON data to be passed to the script.
+- `--data` (string) – JSON data to be passed to the script.
 - `--no-preview` (bool) – Do not show the JSON data preview.
 - `--deep-preview` (bool) – Show the JSON data preview with all the properties and array items expanded.
 - `--no-results` (bool) – Do not show the actions' results.
@@ -433,13 +530,13 @@ $ faber execute --dry --data --no-preview
 #### What does it do?
 
 1. Read the `faberconfig` file from the directory;
-2. Ask for the **encoded JSON data** to pass to the boilerplate (when not provided with the `--data` flag);
+2. Ask for the **JSON data** to pass to the actions (when not provided with the `--data` flag);
 3. Display a **preview of the data** (when not using the `--no-preview` flag);
 4. Execute the **actions** from `faberconfig` (when not using the `--dry` flag);
 
 ### `faber ls`
 
-List your registered boilerplates.
+List your registered repository aliases.
 
 #### Usage example
 
@@ -449,12 +546,12 @@ $ faber ls
 
 ### `faber add`
 
-Adds a boilerplate to your list of available boilerplates.
+Adds a repository alias to your list of available boilerplates.
 
 #### Usage example
 
 ```shell
-$ faber add my-boilerplate git@github.com:example.git 'My Boilerplate'
+$ faber add my-boilerplate https://github.com/path/example.git 'My Boilerplate'
 ```
 
 #### Arguments
@@ -467,7 +564,7 @@ $ faber add my-boilerplate git@github.com:example.git 'My Boilerplate'
 
 ### `faber rm`
 
-Removes a boilerplate from your list of available boilerplates.
+Removes a repository alias from your list of available boilerplates.
 
 #### Usage example
 
@@ -485,6 +582,6 @@ $ faber rm my-boilerplate
 
 This documentation was inspired by the [Plop](https://plopjs.com/) documentation.
 
-_Plop_ is an amazing micro-framework with a similar goal as _Faber_, however, while _Plop_ is great for generating code inside your project using [Handlebars](https://handlebarsjs.com/) as template engine, _Faber_ is fully focused on starting new projects, with no defined template engine, so you might be able to run the boilerplate project on its own for testing its features with your own.
+_Plop_ is an amazing micro-framework with a similar goal as _Faber_, however, while _Plop_ is great for generating code inside your project using [Handlebars](https://handlebarsjs.com/) as template engine, _Faber_ is fully focused on starting new projects, with no defined template engine, so that you can run the boilerplate project on its own, for testing or development, while still making it a living boilerplate to clone with Faber.
 
 _P.S. You can use both together in your projects to make your life easier._ 😉

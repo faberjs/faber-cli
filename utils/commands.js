@@ -23,19 +23,28 @@ import { existsSync } from 'fs';
  * @param {object} options - The command options object.
  */
 export async function handleExecCommand(options) {
-	// Check if faberconfig file exists
-	if (!existsSync(getAbsolutePath('faberconfig.js'))) {
+	// Check if the config file exists
+	const configFileName = 'faberconfig';
+	let configFile = '';
+	for (let ext of ['js', 'cjs', 'mjs']) {
+		const filePath = getAbsolutePath(`${configFileName}.${ext}`);
+		if (existsSync(filePath)) {
+			configFile = filePath;
+			break;
+		}
+	}
+	if (!configFile) {
 		const pwd = shell.pwd();
-		printError(`Fetching error`, `No faberconfig file found at ${colors.cyan(pwd)}.`);
+		printError(`Fetching error`, `No ${configFileName} file found at ${colors.cyan(pwd)}.`);
 		shell.exit(0);
 	}
 
-	// Imports the faberconfig file
+	// Imports the config file
 	let config = null;
 	try {
-		config = await import(getAbsolutePath('faberconfig.js'));
+		config = await import(configFile);
 	} catch (error) {
-		printError('Parsing error', 'An error occurred while reading the faberconfig file.', error);
+		printError('Parsing error', `An error occurred while reading the ${configFileName} file.`, error);
 		shell.exit(0);
 	}
 	config.default(faber);

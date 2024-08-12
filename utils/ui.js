@@ -122,7 +122,11 @@ export function printActionResults(actionResults) {
 
 			case 'run':
 				if (r.result.code === 0) {
-					resultRows.push([r.action, r.type, `Executed \`${colors.magenta(r.command)}\` without errors.`]);
+					resultRows.push([
+						r.action,
+						r.type,
+						`Executed \`${colors.magenta(r.command)}\` at ${colors.cyan(r.dir)}`,
+					]);
 				}
 				break;
 

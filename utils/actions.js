@@ -244,6 +244,7 @@ export async function runActions(actions) {
 											type: action.type,
 											command: executed.command,
 											result: executed.result,
+											dir: getRelativePath(executed.dir, true),
 										};
 									})
 								);
@@ -384,25 +385,27 @@ function runCommands(commands, silent = true) {
 					console.log('');
 					printMsg(`Running command: ${colors.magenta(command)}`, 'muted', '$');
 				}
+				const workingDir = shell.pwd();
 				const shellResults = /^cd /.test(command)
 					? await shell.cd(command.replace('cd ', ''))
 					: await shell.exec(command, { silent });
 				if (shellResults.code === 0) {
 					results.push({
 						command,
+						dir: workingDir,
 						result: {
 							code: shellResults.code,
 							stdout: shellResults.stdout,
 							stderr: shellResults.stderr,
 						},
 					});
-					await returnToRootDirectory();
 				} else {
 					await returnToRootDirectory();
 					reject(shellResults.stderr);
 				}
 			}
 
+			await returnToRootDirectory();
 			resolve(results);
 		} catch (err) {
 			reject(err);

@@ -37,7 +37,11 @@ export async function runActions(actions) {
 								);
 							} catch (err) {
 								reject(
-									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+									`On action [${colors.cyan(
+										index + 1
+									)}] (of type \`${colors.cyan(
+										action.type
+									)}\`). ${err}`
 								);
 							}
 							break;
@@ -63,13 +67,20 @@ export async function runActions(actions) {
 								);
 							} catch (err) {
 								reject(
-									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+									`On action [${colors.cyan(
+										index + 1
+									)}] (of type \`${colors.cyan(
+										action.type
+									)}\`). ${err}`
 								);
 							}
 							break;
 						case 'move':
 							try {
-								const movingResults = await runMoving(action.from, action.to);
+								const movingResults = await runMoving(
+									action.from,
+									action.to
+								);
 								results = results.concat(
 									movingResults
 										.filter((r) => r.moved)
@@ -85,13 +96,19 @@ export async function runActions(actions) {
 								);
 							} catch (err) {
 								reject(
-									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+									`On action [${colors.cyan(
+										index + 1
+									)}] (of type \`${colors.cyan(
+										action.type
+									)}\`). ${err}`
 								);
 							}
 							break;
 						case 'delete':
 							try {
-								const deletionsResults = await runDeletions(action.paths);
+								const deletionsResults = await runDeletions(
+									action.paths
+								);
 								results = results.concat(
 									deletionsResults.map((deleted) => {
 										return {
@@ -103,13 +120,20 @@ export async function runActions(actions) {
 								);
 							} catch (err) {
 								reject(
-									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+									`On action [${colors.cyan(
+										index + 1
+									)}] (of type \`${colors.cyan(
+										action.type
+									)}\`). ${err}`
 								);
 							}
 							break;
 						case 'run':
 							try {
-								const commandsResults = await runCommands(action.command, action.silent);
+								const commandsResults = await runCommands(
+									action.command,
+									action.silent
+								);
 								results = results.concat(
 									commandsResults.map((executed) => {
 										return {
@@ -123,7 +147,11 @@ export async function runActions(actions) {
 								);
 							} catch (err) {
 								reject(
-									`On action [${colors.cyan(index + 1)}] (of type \`${colors.cyan(action.type)}\`). ${err}`
+									`On action [${colors.cyan(
+										index + 1
+									)}] (of type \`${colors.cyan(
+										action.type
+									)}\`). ${err}`
 								);
 							}
 							break;
@@ -150,24 +178,40 @@ async function runReplacements(files, ignore, from, to) {
 }
 
 async function runConditionals(files, ignore, identifier, condition) {
-	const { positivePatterns, negativePatterns } = getConditionalCommentPatterns(identifier, condition);
+	const { positivePatterns, negativePatterns } = getConditionalCommentPatterns(
+		identifier,
+		condition
+	);
 
 	return new Promise(async (resolve, reject) => {
 		try {
 			let results = [];
 			for (const positivePattern of positivePatterns) {
-				const res = await replace({ files, from: positivePattern, to: '$1', countMatches: true, ignore });
+				const res = await replace({
+					files,
+					from: positivePattern,
+					to: '$1',
+					countMatches: true,
+					ignore,
+				});
 				results = [...results, ...res];
 			}
 			for (const negativePattern of negativePatterns) {
-				const res = await replace({ files, from: negativePattern, to: '', countMatches: true, ignore });
+				const res = await replace({
+					files,
+					from: negativePattern,
+					to: '',
+					countMatches: true,
+					ignore,
+				});
 				results = [...results, ...res];
 			}
 			let uniqueResults = results.reduce((acc, res) => {
 				if (acc[res.file]) {
 					acc[res.file].numReplacements += res.numReplacements;
 					acc[res.file].numMatches += res.numMatches;
-					acc[res.file].hasChanged = acc[res.file].hasChanged || res.hasChanged;
+					acc[res.file].hasChanged =
+						acc[res.file].hasChanged || res.hasChanged;
 					return acc;
 				} else {
 					acc[res.file] = {
@@ -195,7 +239,11 @@ async function runMoving(from, to) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const results = [];
-			if (Array.isArray(from) && Array.isArray(to) && from.length === to.length) {
+			if (
+				Array.isArray(from) &&
+				Array.isArray(to) &&
+				from.length === to.length
+			) {
 				for (const [index, fromPath] of from.entries()) {
 					const alreadyExists = fs.existsSync(getAbsolutePath(to[index]));
 					await moveFile(fromPath, to[index]);
@@ -255,7 +303,11 @@ function runCommands(commands, silent = true) {
 				const command = commandsToRun[i].trim();
 				if (!silent) {
 					console.log('');
-					printMsg(`Running command: ${colors.magenta(command)}`, 'muted', '$');
+					printMsg(
+						`Running command: ${colors.magenta(command)}`,
+						'muted',
+						'$'
+					);
 				}
 				const workingDir = shell.pwd();
 				const shellResults = /^cd /.test(command)
@@ -283,13 +335,6 @@ function runCommands(commands, silent = true) {
 			reject(err);
 		}
 	});
-}
-
-function adaptJoiMessage(message) {
-	const coloredProperty = colors.cyan('$1');
-	return message
-		.replace(/"(\w+)" is/, `The \`${coloredProperty}\` property is`)
-		.replace(/"(\w+)" must be/, `The \`${coloredProperty}\` property must be`);
 }
 
 async function returnToRootDirectory() {

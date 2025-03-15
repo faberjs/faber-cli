@@ -1,7 +1,7 @@
 import { directory as homeDir } from 'home-dir';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
-const settingsFilePath = `${homeDir}/.faberconfig`;
+const settingsFilePath = `${homeDir}/.fabersettings.json`;
 
 export async function getSettings() {
 	if (!existsSync(settingsFilePath)) return {};
@@ -19,13 +19,17 @@ export async function getBoilerplates() {
 
 export async function addBoilerplate(data) {
 	const settings = await getSettings();
-	settings.hasOwnProperty('boilerplates') ? settings.boilerplates.push(data) : (settings.boilerplates = [data]);
+	settings.hasOwnProperty('boilerplates')
+		? settings.boilerplates.push(data)
+		: (settings.boilerplates = [data]);
 	await updateSettings(settings);
 }
 
 export async function removeBoilerplate(alias) {
 	const settings = await getSettings();
-	settings.boilerplates = settings.boilerplates.filter((boilerplate) => boilerplate.alias !== alias);
+	settings.boilerplates = settings.boilerplates.filter(
+		(boilerplate) => boilerplate.alias !== alias
+	);
 	await updateSettings(settings);
 }
 

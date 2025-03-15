@@ -126,11 +126,9 @@ Here is an example of JSON data:
 
 ### Encoded JSON (recommended)
 
-There are a few ways to pass the JSON data to your `faberconfig` file. The recommended is using a **base64 encoded** JSON.
+There are a few ways to pass the JSON data to your `faberconfig` file. The most reliable way is using a **base64 encoded** JSON.
 
-Encoding guarantees its consistency and allows you to use the same value for both the CLI input or as command argument.
-
-It might be good to **minify** the JSON before encoding it, to generate a smaller string.
+Encoding guarantees its content consistency and works seamlessly with Faber.
 
 > You can use online tools like [jsonformatter.org](https://jsonformatter.org/json-minify) to minify the JSON, and [base64encode.net](https://www.base64encode.net/) to encode it.
 
@@ -140,15 +138,17 @@ Here is an example of a base64 encoded JSON:
 eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2UiOmZhbHNlfQ==
 ```
 
+> **Tip**: Minifying the JSON before encoding it helps generating a smaller string.
+
 ### Minified JSON (less reliable)
 
-Although we encourage using the encoding approach, you can also pass the JSON just **minified**. It might be easier than encoding depending on your workflow, but has some limitations:
+Although we encourage using the encoding approach, you can also pass a **minified** JSON directly. It might be easier than encoding depending on your workflow, but has some caveats:
 
 #### When asked by CLI
 
 By default, the CLI will prompt you to paste the JSON data during its execution.
 
-if not encoded, the JSON must be at least **minified** (with no line breaks), as in the example below:
+if not encoded, the JSON can be passed directly, as long as it **does not contain line breaks**, as in the example below:
 
 ```shell
 $ Paste the project data: {"name":"My Project","client":"The Client","isMultilanguage":false}
@@ -158,12 +158,16 @@ $ Paste the project data: {"name":"My Project","client":"The Client","isMultilan
 
 #### Using `--data` argument
 
-If you prefer to pass the data directly in the terminal via command, you can use the `--data` argument, passing the JSON as its value.
+If you prefer to pass the data directly in the terminal via command, you can use the `--data` argument, passing the JSON as value.
 
-In this case, if not encoded, the JSON must be **minified** and then **stringified** (to be correctly interpreted by the terminal), as in the example below:
+In this case, if not encoded, the JSON must be **minified** and then **stringified**.
+
+However, some terminals might **misinterpret JSONs that include spaces** in it, or ignore **escaped characters**, which would break the JSON. To avoid this, encoding would be a more reliable option.
+
+Here is an usage example (this might or not work depending on your system):
 
 ```shell
-faber create --data "{\"name\":\"My Project\",\"client\":\"The Client\",\"isMultilanguage\":false}"
+faber create my-project --data "{\"name\":\"My Project\",\"client\":\"The Client\",\"isMultilanguage\":false}"
 ```
 
 > You can use an online tool like **jsonformatter.org** to [minify](https://jsonformatter.org/json-minify) and then [stringify](https://jsonformatter.org/json-stringify-online) the JSON.
@@ -190,13 +194,13 @@ See below the available actions that you can use:
 
 Replaces text or patterns on files or glob patterns.
 
-| Property | Type                              | Required | Description                                                                                                  |
-| -------- | --------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| `type`   | _String_                          | Yes      | Should be `'replace'` for this action.                                                                       |
-| `files`  | _String,[String]_                 | Yes      | Path to the files where the replace should happen. It can be an array of paths, and can use glob pattern.    |
-| `ignore` | _String,[String]_                 | No       | Path to the files where the replace shouldn't happen. It can be an array of paths, and can use glob pattern. |
-| `from`   | _String,[String],RegExp,[RegExp]_ | Yes      | Text(s) or pattern(s) to look for in the `files`.                                                            |
-| `to`     | _String,[String],RegExp,[RegExp]_ | Yes      | The replacement text(s). If array is provided, should match the same length as the `from` array.             |
+| Property | Type                              | Required | Description                                                                                                   |
+| -------- | --------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `type`   | _String_                          | Yes      | Should be `'replace'` for this action.                                                                        |
+| `files`  | _String,[String]_                 | Yes      | Path to the files where the replace should happen. It can be an array of paths, and can use glob patterns.    |
+| `ignore` | _String,[String]_                 | No       | Path to the files where the replace shouldn't happen. It can be an array of paths, and can use glob patterns. |
+| `from`   | _String,[String],RegExp,[RegExp]_ | Yes      | Text(s) or pattern(s) to look for in the `files`.                                                             |
+| `to`     | _String,[String],RegExp,[RegExp]_ | Yes      | The replacement text(s). If array is provided, should match the same length as the `from` array.              |
 
 #### Usage examples
 
@@ -226,19 +230,19 @@ faber.setActions((data) => {
 
 #### Considerations
 
-- By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regex pattern with the global flag (like `/something/g`).
-- Consider using **regex boundaries** for more precise replacements, like `/\bNAME\b/g`. This prevents matching strings like `AUTHOR_NAME` when looking for just `NAME`.
+- By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regular expression with the global flag (like `/something/g`).
+- Consider using **regex boundaries** for more precise replacements, like `/\bNAME\b/g`. This prevents matching strings like `COAUTHOR` when looking for just `AUTHOR`.
 - This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit its documentation.
 
 ### Move (or Rename)
 
 Can be used to move or rename files and folders.
 
-| Property | Type              | Required | Description                                                    |
-| -------- | ----------------- | -------- | -------------------------------------------------------------- |
-| `type`   | _String_          | Yes      | Should be `'move'` for this action.                            |
-| `from`   | _String,[String]_ | Yes      | Path(s) to the source files or folders to move.                |
-| `to`     | _String,[String]_ | Yes      | Destination path(s) to the files or folders to move or rename. |
+| Property | Type              | Required | Description                                                                                                                            |
+| -------- | ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`   | _String_          | Yes      | Should be `'move'` for this action.                                                                                                    |
+| `from`   | _String,[String]_ | Yes      | Path(s) to the source files or folders to move.                                                                                        |
+| `to`     | _String,[String]_ | Yes      | Destination path(s) to the files or folders to move or rename. If array is provided, should match the same length as the `from` array. |
 
 #### Usage examples
 
@@ -266,16 +270,16 @@ faber.setActions((data) => {
 - When moving a file to another directory, if the destination (`to`) directory doesn't exist yet, it is created automatically.
 - If a file/folder with the destination (`to`) name already exists, the existing one will be **overriden**.
 - If the source (`from`) file/folder doesn't exist, an **error** is thrown.
-- This action uses the [move-file](https://www.npmjs.com/package/move-file) package for renaming files. Please visit its documentation if needed.
+- This action uses the [move-file](https://www.npmjs.com/package/move-file) package for moving/renaming files. Please visit its documentation if needed.
 
 ### Delete
 
 Deletes files or entire folders by defined paths or glob patterns.
 
-| Property | Type              | Required | Description                                                             |
-| -------- | ----------------- | -------- | ----------------------------------------------------------------------- |
-| `type`   | _String_          | Yes      | Should be `'delete'` for this action.                                   |
-| `paths`  | _String,[String]_ | Yes      | Paths to the files or folders to delete. Also supporting glob patterns. |
+| Property | Type              | Required | Description                                                                                     |
+| -------- | ----------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `type`   | _String_          | Yes      | Should be `'delete'` for this action.                                                           |
+| `paths`  | _String,[String]_ | Yes      | Path to the files or folders to delete. It can be an array of paths, and can use glob patterns. |
 
 #### Usage examples
 
@@ -303,15 +307,15 @@ faber.setActions((data) => {
 
 ### Conditional
 
-Update files' content based on conditional rules. Useful to keep/remove text according to conditions with the provided data.
+Update files' content based on conditional rules. Useful to keep/remove text according to conditions and the provided data.
 
-| Property     | Type              | Required | Description                                                                                                                                                                                      |
-| ------------ | ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `type`       | _String_          | Yes      | Should be `'conditional'` for this action.                                                                                                                                                       |
-| `files`      | _String,[String]_ | Yes      | Path to the files where the conditional updates should happen. It can be an array of paths.                                                                                                      |
-| `ignore`     | _String,[String]_ | No       | Path to the files where the replace shouldn't happen. It can be an array of paths, and can use glob pattern.                                                                                     |
-| `identifier` | _String_          | Yes      | A token to identify the content to be kept/removed.                                                                                                                                              |
-| `condition`  | _Boolean_         | Yes      | The condition to keep/remove the content. When the condition is `true`, the block is kept. However, when the block uses a negative token (`!`), the block is kept when the condition is `false`. |
+| Property     | Type              | Required | Description                                                                                                                                                                                                                                           |
+| ------------ | ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`       | _String_          | Yes      | Should be `'conditional'` for this action.                                                                                                                                                                                                            |
+| `files`      | _String,[String]_ | Yes      | Path to the files where the conditional updates should happen. It can be an array of paths.                                                                                                                                                           |
+| `ignore`     | _String,[String]_ | No       | Path to the files where the replace shouldn't happen. It can be an array of paths, and can use glob pattern.                                                                                                                                          |
+| `identifier` | _String_          | Yes      | A token to identify the content to be kept/removed.                                                                                                                                                                                                   |
+| `condition`  | _Boolean_         | Yes      | The condition to keep/remove the content. When the condition is `true`, the content is kept, and removed when `false`. However, when the block uses a negative token (`!`), the block is kept when the condition is `false`, and removed when `true`. |
 
 #### Usage examples
 
@@ -371,8 +375,8 @@ Currently, you can use the following commenting styles for conditional replaceme
 - The identifier is **required** for both `@faber-if` and `@faber-endif` for the action to work correctly;
 - There is no `@faber-else` logic yet;
 - The identifier is **not a variable**, it's just a string that links the conditional blocks to the configured action;
-- You can have multiple blocks using the **same identifier** for the condition;
-- Prefix the identifier with an exclamation mark `!` to keep the block when the condition is false;
+- You can have multiple conditional blocks using the **same identifier**;
+- Prefix the identifier with an exclamation mark `!` to keep the block when the condition is `false` instead of `true`;
 
 ### Run
 
@@ -477,22 +481,22 @@ $ faber create my-project https://github.com/path/example.git --branch main --us
 
 `faber create <name> [clone_url]`
 
-- `<name>` – The name for the project root folder.
-- `[clone_url]` – The URL for cloning the repository (can be SSL or HTTPS, depending on your permissions and authentication)
+- `<name>` – Name of the project's root folder.
+- `[clone_url]` – The URL for cloning the repository (can be SSL or HTTPS, depending on your permissions and authentication).
 
 #### Flags (optional)
 
-- `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning the repository.
+- `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning any repository.
 - `--override-existing` (bool) – If the folder already exists, skip the prompt and delete the existing folder before cloning the repository.
-- `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, use the default branch (usually named `main` or `master`).
-- `--keep-git` (bool) – Does not delete the existing Git history from the new cloned folder.
+- `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, the default branch is used.
+- `--keep-git` (bool) – Prevent deleting the existing Git history from the new cloned folder, removed by default.
 
 Also includes all flags available to the `faber execute` command:
 
-- `--data` (string) – JSON data to be passed to the script.
+- `--data` (string) – JSON data (preferrably encoded) to be passed to the actions.
 - `--no-preview` (bool) – Does not show the JSON data preview.
 - `--deep-preview` (bool) – Shows the JSON data preview with all the properties and array items expanded.
-- `--no-results` (bool) – Does not show the actions' results.
+- `--no-results` (bool) – Does not show the actions results.
 
 #### What does it do?
 
@@ -522,10 +526,10 @@ $ faber execute --data "{title:\"Example\"}" --no-preview
 
 #### Flags (optional)
 
-- `--data` (string) – JSON data to be passed to the script.
-- `--no-preview` (bool) – Do not show the JSON data preview.
-- `--deep-preview` (bool) – Show the JSON data preview with all the properties and array items expanded.
-- `--no-results` (bool) – Do not show the actions' results.
+- `--data` (string) – JSON data (preferrably encoded) to be passed to the actions.
+- `--no-preview` (bool) – Does not show the JSON data preview.
+- `--deep-preview` (bool) – Shows the JSON data preview with all the properties and array items expanded.
+- `--no-results` (bool) – Does not show the actions results.
 
 #### What does it do?
 

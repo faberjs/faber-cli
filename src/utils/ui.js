@@ -39,7 +39,9 @@ export function printError(type, msg, error = '') {
 	const message = colors.red('✖ ' + colors.bold(`${type}: `)) + msg;
 	console.log(message);
 	if (error) {
-		typeof error === 'string' ? console.log('↳', error.replace(/\n$/, '')) : console.log('↳', error);
+		typeof error === 'string'
+			? console.log('↳', error.replace(/\n$/, ''))
+			: console.log('↳', error);
 	}
 	console.log();
 }
@@ -62,8 +64,16 @@ export function printTable(headers, rows) {
  * @param {object[]} boilerplates The list of registered boilerplates.
  */
 export function printBoilerplatesTable(boilerplates) {
-	const headers = [colors.cyan.bold('Alias'), colors.cyan.bold('Repository URL'), colors.cyan.bold('Display Name')];
-	const rows = boilerplates.map((b) => [b.alias, b.repo, b.name === '' ? colors.gray('undefined') : b.name]);
+	const headers = [
+		colors.cyan.bold('Alias'),
+		colors.cyan.bold('Repository URL'),
+		colors.cyan.bold('Display Name'),
+	];
+	const rows = boilerplates.map((b) => [
+		b.alias,
+		b.repo,
+		b.name === '' ? colors.gray('undefined') : b.name,
+	]);
 	printTable(headers, rows);
 }
 
@@ -79,9 +89,9 @@ export function printActionResults(actionResults) {
 				resultRows.push([
 					r.action,
 					r.type,
-					`Updated ${colors.magenta(r.path)} with ${colors.green(r.count)} ${
-						r.count === 1 ? 'replacement' : 'replacements'
-					}`,
+					`Updated ${colors.magenta(r.path)} with ${colors.green(
+						r.count
+					)} ${r.count === 1 ? 'replacement' : 'replacements'}`,
 				]);
 				break;
 
@@ -89,14 +99,20 @@ export function printActionResults(actionResults) {
 				resultRows.push([
 					r.action,
 					r.type,
-					`Updated ${colors.magenta(r.path)} with ${colors.green(r.count)} conditional ${
+					`Updated ${colors.magenta(r.path)} with ${colors.green(
+						r.count
+					)} conditional ${
 						r.count === 1 ? 'replacement' : 'replacements'
 					}`,
 				]);
 				break;
 
 			case 'delete':
-				resultRows.push([r.action, r.type, `Deleted ${colors.magenta(r.path)}`]);
+				resultRows.push([
+					r.action,
+					r.type,
+					`Deleted ${colors.magenta(r.path)}`,
+				]);
 				break;
 
 			case 'move':
@@ -110,19 +126,35 @@ export function printActionResults(actionResults) {
 				const wasRenamed = filenameFrom !== filenameTo;
 
 				if (wasRenamed && wasMoved) {
-					msg += `Moved ${colors.magenta(r.path)} to ${colors.green(r.result)}`;
+					msg += `Moved ${colors.magenta(r.path)} to ${colors.green(
+						r.result
+					)}`;
 				} else if (wasMoved) {
-					msg += `Moved ${colors.magenta(r.path)} to ${colors.green(r.result)}`;
+					msg += `Moved ${colors.magenta(r.path)} to ${colors.green(
+						r.result
+					)}`;
 				} else if (wasRenamed) {
-					msg += `Renamed ${colors.magenta(r.path)} to ${colors.green(r.result)}`;
+					msg += `Renamed ${colors.magenta(r.path)} to ${colors.green(
+						r.result
+					)}`;
 				}
 
-				resultRows.push([r.action, r.type, msg + (r.overriden ? colors.gray(` (overriding existing)`) : '')]);
+				resultRows.push([
+					r.action,
+					r.type,
+					msg + (r.overriden ? colors.gray(` (overriding existing)`) : ''),
+				]);
 				break;
 
 			case 'run':
 				if (r.result.code === 0) {
-					resultRows.push([r.action, r.type, `Executed \`${colors.magenta(r.command)}\` without errors.`]);
+					resultRows.push([
+						r.action,
+						r.type,
+						`Executed \`${colors.magenta(r.command)}\` at ${colors.cyan(
+							r.dir
+						)}`,
+					]);
 				}
 				break;
 
@@ -130,7 +162,14 @@ export function printActionResults(actionResults) {
 				break;
 		}
 	});
-	printTable([colors.cyan.bold('Action'), colors.cyan.bold('Type'), colors.cyan.bold('Result')], resultRows);
+	printTable(
+		[
+			colors.cyan.bold('Action'),
+			colors.cyan.bold('Type'),
+			colors.cyan.bold('Result'),
+		],
+		resultRows
+	);
 }
 
 /**
@@ -144,9 +183,12 @@ export function printDataPreview(data, expanded = false) {
 	function addRow(property, value, deepness = 0) {
 		const type = typeof value;
 
-		const prefix = deepness > 0 ? ' '.repeat(deepness - 1) + '∟' : '';
-		let label = Number.isInteger(property) ? `[${colors.bold(property)}]` : colors.bold(property);
-		if (property.startsWith('_')) {
+		const prefix = deepness > 0 ? ' '.repeat(deepness - 1) + '∟'.gray : '';
+		let label = Number.isInteger(property)
+			? `[${colors.bold(property)}]`
+			: colors.bold(property);
+
+		if (typeof property === 'string' && property.startsWith('_')) {
 			label = colors.gray(label);
 		}
 		label = prefix + label;
@@ -159,17 +201,28 @@ export function printDataPreview(data, expanded = false) {
 				tableRows.push([
 					label,
 					colors.magenta(type),
-					value ? colors.green.bold('✔') + colors.green(' true') : colors.red.bold('✗') + colors.red(' false'),
+					value
+						? colors.green.bold('✔') + colors.green(' true')
+						: colors.red.bold('✗') + colors.red(' false'),
 				]);
 				break;
 			case 'object':
 				if (value === null) {
-					tableRows.push([label, colors.magenta('null'), colors.blue('null')]);
+					tableRows.push([
+						label,
+						colors.magenta('null'),
+						colors.blue('null'),
+					]);
 					break;
 				} else if (Array.isArray(value)) {
 					const length = value.length;
-					const description = length === 1 ? length + ' item' : length + ' items';
-					tableRows.push([label, colors.magenta('array'), colors.gray(description)]);
+					const description =
+						length === 1 ? length + ' item' : length + ' items';
+					tableRows.push([
+						label,
+						colors.magenta('array'),
+						colors.gray(description),
+					]);
 					if (expanded) {
 						value.forEach((item, i) => {
 							addRow(i, item, deepness + 1);
@@ -178,8 +231,13 @@ export function printDataPreview(data, expanded = false) {
 					break;
 				} else {
 					const length = Object.keys(value).length;
-					const description = length === 1 ? length + ' property' : length + ' properties';
-					tableRows.push([label, colors.magenta(type), colors.gray(description)]);
+					const description =
+						length === 1 ? length + ' property' : length + ' properties';
+					tableRows.push([
+						label,
+						colors.magenta(type),
+						colors.gray(description),
+					]);
 					if (expanded) {
 						Object.keys(value).forEach((key) => {
 							addRow(key, value[key], deepness + 1);
@@ -188,7 +246,8 @@ export function printDataPreview(data, expanded = false) {
 					break;
 				}
 			case 'string':
-				const str = value.length > 60 ? value.substring(0, 60) + '...' : value;
+				const str =
+					value.length > 60 ? value.substring(0, 60) + '...' : value;
 				tableRows.push([label, colors.magenta(type), str]);
 				break;
 			default:
@@ -201,5 +260,12 @@ export function printDataPreview(data, expanded = false) {
 		addRow(key, data[key]);
 	});
 
-	printTable([colors.cyan.bold('Property'), colors.cyan.bold('Type'), colors.cyan.bold('Value')], tableRows);
+	printTable(
+		[
+			colors.cyan.bold('Property'),
+			colors.cyan.bold('Type'),
+			colors.cyan.bold('Value'),
+		],
+		tableRows
+	);
 }

@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { adaptJoiMessage } from '../utils/ui.js';
 
 /**
  * Validates the actions' objects.
@@ -9,17 +10,31 @@ import Joi from 'joi';
 export function validateActions(actions) {
 	if (!Array.isArray(actions)) {
 		// Check if the returned actions value is an array
-		throw new Error(`The ${colors.cyan(`setActions()`)} callback function must return an array.`);
+		throw new Error(
+			`The ${colors.cyan(
+				`setActions()`
+			)} callback function must return an array.`
+		);
 	}
 
 	const availableActions = ['replace', 'conditional', 'move', 'delete', 'run'];
 	actions.forEach((action, index) => {
 		if (!action.hasOwnProperty('type')) {
-			throwActionError(index, action, 'validation', `\`${action.type.bold}\` property not found on action`);
+			throwActionError(
+				index,
+				action,
+				'validation',
+				`\`${action.type.bold}\` property not found on action`
+			);
 		}
 
 		if (!availableActions.includes(action.type)) {
-			throwActionError(index, action, 'validation', `\`${action.type.bold}\` is not a valid action type`);
+			throwActionError(
+				index,
+				action,
+				'validation',
+				`\`${action.type.bold}\` is not a valid action type`
+			);
 		}
 
 		switch (action.type) {
@@ -27,17 +42,34 @@ export function validateActions(actions) {
 				(function () {
 					const schema = Joi.object({
 						type: Joi.string().valid('replace').required(),
-						files: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
-						ignore: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
-						from: Joi.alternatives()
-							.try(Joi.string(), Joi.object().regex(), Joi.array().items(Joi.string(), Joi.object().regex()))
+						files: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
 							.required(),
-						to: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						ignore: Joi.alternatives().try(
+							Joi.string(),
+							Joi.array().items(Joi.string())
+						),
+						from: Joi.alternatives()
+							.try(
+								Joi.string(),
+								Joi.object().regex(),
+								Joi.array().items(Joi.string(), Joi.object().regex())
+							)
+							.required(),
+						to: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
 					}).unknown();
 
 					// Validates settings for the `replace` action
 					const results = schema.validate(action);
-					results.error && throwActionError(index, action, 'validation', results.error.message);
+					results.error &&
+						throwActionError(
+							index,
+							action,
+							'validation',
+							results.error.message
+						);
 				})();
 				break;
 
@@ -45,15 +77,26 @@ export function validateActions(actions) {
 				(function () {
 					const schema = Joi.object({
 						type: Joi.string().valid('conditional').required(),
-						files: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
-						ignore: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())),
+						files: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
+						ignore: Joi.alternatives().try(
+							Joi.string(),
+							Joi.array().items(Joi.string())
+						),
 						identifier: Joi.string().required(),
 						condition: Joi.boolean().required(),
 					}).unknown();
 
 					// Validates settings for the `conditional` action
 					const results = schema.validate(action);
-					results.error && throwActionError(index, action, 'validation', results.error.message);
+					results.error &&
+						throwActionError(
+							index,
+							action,
+							'validation',
+							results.error.message
+						);
 				})();
 				break;
 
@@ -61,12 +104,20 @@ export function validateActions(actions) {
 				(function () {
 					const schema = Joi.object({
 						type: Joi.string().valid('delete').required(),
-						paths: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						paths: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
 					}).unknown();
 
 					// Validates settings for the `delete` action
 					const results = schema.validate(action);
-					results.error && throwActionError(index, action, 'validation', results.error.message);
+					results.error &&
+						throwActionError(
+							index,
+							action,
+							'validation',
+							results.error.message
+						);
 				})();
 				break;
 
@@ -74,13 +125,23 @@ export function validateActions(actions) {
 				(function () {
 					const schema = Joi.object({
 						type: Joi.string().valid('move').required(),
-						from: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
-						to: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						from: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
+						to: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
 					}).unknown();
 
 					// Validates settings for the `move` action
 					const results = schema.validate(action);
-					results.error && throwActionError(index, action, 'validation', results.error.message);
+					results.error &&
+						throwActionError(
+							index,
+							action,
+							'validation',
+							results.error.message
+						);
 				})();
 				break;
 
@@ -88,13 +149,21 @@ export function validateActions(actions) {
 				(function () {
 					const schema = Joi.object({
 						type: Joi.string().valid('run').required(),
-						command: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).required(),
+						command: Joi.alternatives()
+							.try(Joi.string(), Joi.array().items(Joi.string()))
+							.required(),
 						silent: Joi.boolean(),
 					}).unknown();
 
 					// Validates settings for the `run` action
 					const results = schema.validate(action);
-					results.error && throwActionError(index, action, 'validation', results.error.message);
+					results.error &&
+						throwActionError(
+							index,
+							action,
+							'validation',
+							results.error.message
+						);
 				})();
 				break;
 

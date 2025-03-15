@@ -269,3 +269,17 @@ export function printDataPreview(data, expanded = false) {
 		tableRows
 	);
 }
+
+/**
+ * Returns the Joi error message with some improved text.
+ * @param {String} message Error message from Joi library.
+ */
+export function adaptJoiMessage(message) {
+	const coloredProperty = colors.cyan('$1');
+	return message
+		.replace(/"(\w+)" is/, `The \`${coloredProperty}\` property is`)
+		.replace(
+			/"(\w+)" must be/,
+			`The \`${coloredProperty}\` property must be`
+		);
+}

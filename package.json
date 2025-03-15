@@ -2,7 +2,7 @@
 	"name": "faber-cli",
 	"version": "0.0.3",
 	"description": "",
-	"exports": "./index.js",
+	"exports": "./src/index.js",
 	"node": ">=14.16",
 	"keywords": [],
 	"author": "",
@@ -25,6 +25,6 @@
 		"shelljs": "^0.8.5"
 	},
 	"bin": {
-		"faber": "index.js"
+		"faber": "src/index.js"
 	}
 }

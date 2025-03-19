@@ -1,7 +1,5 @@
 # Faber CLI
 
-> ⚠ This is a work in progress. Before the release of version `1.0.0`, please expect things to change at any time.
-
 Faber is a CLI that helps you create/scaffold new projects using custom boilerplates.
 
 You can **prepare your own boilerplates** to make them configurable for creating new projects with Faber, and pass custom parameters, data or actions to execute in the scaffolding of your new project.
@@ -50,7 +48,7 @@ npm install -g faber-cli
 
 ### Usage
 
-Here is a quick overview of how to use Faber.js on your projects:
+Here is a quick overview of how to use Faber on your projects:
 
 If you want to **prepare a boilerplate** for using Faber:
 
@@ -112,7 +110,7 @@ export default (faber) => {
 
 ## Passing Data
 
-During the `faber create` and `faber execute` commands, the CLI asks for minified (optionally encoded) JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
+During the `faber create` and `faber execute` commands, the CLI asks for a minified (optionally encoded) JSON data. This data is passed to the `setActions()` function, allowing you to use it in the actions.
 
 Here is an example of JSON data:
 
@@ -124,21 +122,21 @@ Here is an example of JSON data:
 }
 ```
 
+Due to the nature of how terminals (command prompts) work, there are some limitations on how to pass the data to the CLI. See below how to do it properly.
+
 ### Encoded JSON (recommended)
 
-There are a few ways to pass the JSON data to your `faberconfig` file. The most reliable way is using a **base64 encoded** JSON.
+The most reliable way of passing data is using a **Base64 encoded** JSON. Encoding guarantees the content consistency while working with any method of passing data to Faber.
 
-Encoding guarantees its content consistency and works seamlessly with Faber.
+You can encode the JSON to [Base64](https://en.wikipedia.org/wiki/Base64) how you prefer, or use our online [JSON encoder](https://www.faberjs.com/json-encoder/) that works seamlessly with Faber.
 
-> You can use online tools like [jsonformatter.org](https://jsonformatter.org/json-minify) to minify the JSON, and [base64encode.net](https://www.base64encode.net/) to encode it.
-
-Here is an example of a base64 encoded JSON:
+Here is an example of a Base64 encoded JSON:
 
 ```
 eyJuYW1lIjoiTXkgUHJvamVjdCIsImNsaWVudCI6IlRoZSBDbGllbnQiLCJpc011bHRpbGFuZ3VhZ2UiOmZhbHNlfQ==
 ```
 
-> **Tip**: Minifying the JSON before encoding it helps generating a smaller string.
+> **Tip**: Minifying the JSON before encoding it helps generate a smaller string.
 
 ### Minified JSON (less reliable)
 
@@ -148,13 +146,13 @@ Although we encourage using the encoding approach, you can also pass a **minifie
 
 By default, the CLI will prompt you to paste the JSON data during its execution.
 
-if not encoded, the JSON can be passed directly, as long as it **does not contain line breaks**, as in the example below:
+If not encoded, the JSON can be passed directly, as long as it **does not contain line breaks**, as in the example below:
 
 ```shell
 $ Paste the project data: {"name":"My Project","client":"The Client","isMultilanguage":false}
 ```
 
-> You can use an online tool like [jsonformatter.org](https://jsonformatter.org/json-minify) to minify the JSON.
+> You can also use our online [JSON encoder](https://www.faberjs.com/json-encoder/) to minify it without encoding.
 
 #### Using `--data` argument
 
@@ -162,15 +160,15 @@ If you prefer to pass the data directly in the terminal via command, you can use
 
 In this case, if not encoded, the JSON must be **minified** and then **stringified**.
 
-However, some terminals might **misinterpret JSONs that include spaces** in it, or ignore **escaped characters**, which would break the JSON. To avoid this, encoding would be a more reliable option.
+However, some terminals might **misinterpret JSONs that include spaces**, or ignore **escaped characters**, which would break the JSON anyway. To avoid this, encoding would be a more reliable option.
 
-Here is an usage example (this might or not work depending on your system):
+Here is a usage example (this might or not work depending on your system):
 
 ```shell
 faber create my-project --data "{\"name\":\"My Project\",\"client\":\"The Client\",\"isMultilanguage\":false}"
 ```
 
-> You can use an online tool like **jsonformatter.org** to [minify](https://jsonformatter.org/json-minify) and then [stringify](https://jsonformatter.org/json-stringify-online) the JSON.
+> You can use an online tool like **jsonformatter.org** to [stringify](https://jsonformatter.org/json-stringify-online) the JSON after minifying it.
 
 ### Reserved Properties
 

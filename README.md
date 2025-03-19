@@ -62,6 +62,8 @@ If you want to **prepare a boilerplate** for using Faber:
 3. Prepare the [data](#passing-data) you want to use in your actions;
 4. Test your actions with the [`faber execute`](#faber-execute) CLI command.
 
+> Make sure you stage your changes in Git before running your actions. [Learn more](#back-up-before-executing).
+
 If you want to **use an existing boilerplate** to create a new project:
 
 1. Prepare the [data](#passing-data) you want to use for your project as a minified JSON;
@@ -489,7 +491,7 @@ $ faber create my-project https://github.com/path/example.git --branch main --us
 
 #### Flags (optional)
 
-- `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning any repository.
+- `--use-existing` (bool) – If the folder already exists, skip the prompt and continue with the existing folder, without cloning any repository. In this case, make sure you [back up before executing](#back-up-before-executing).
 - `--override-existing` (bool) – If the folder already exists, skip the prompt and delete the existing folder before cloning the repository.
 - `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, the default branch is used.
 - `--keep-git` (bool) – Prevent deleting the existing Git history from the new cloned folder, removed by default.
@@ -540,6 +542,20 @@ $ faber execute --data "{title:\"Example\"}" --no-preview
 2. Ask for the **JSON data** to pass to the actions (when not provided with the `--data` flag);
 3. Display a **preview of the data** (when not using the `--no-preview` flag);
 4. Execute the **actions** from `faberconfig` (when not using the `--dry` flag);
+
+#### Back up before executing
+
+⚠️ To avoid losing your original code when running `faber execute`, make sure you have a **backup with the current state** of your codebase to go back to when testing your actions.
+
+One way to do that is by staging your changes with Git before any test, which also allows you to easily diff the changes your actions made in the files.
+
+Here is a quick example on how to do it in a repository with Git initialized:
+
+1. Make your changes to `faberconfig` and other files;
+2. Stage your changes with `git add .`, or specifying which files to add;
+3. Run `faber execute` to run your configured actions;
+4. Run `git diff` to compare what your actions has changed (or use your favorite visual tool 😉);
+5. Undo your actions' changes with `git clean -fd`;
 
 ### `faber ls`
 

@@ -8,9 +8,10 @@ You can **prepare your own boilerplates** to make them configurable for creating
 
 - [Getting Started](#getting-started)
   - [Requirements](#requirements)
+  - [Demo](#demo)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Configuring faberconfig](#configuring-faberconfig)
+  - [Configuring](#configuring-faberconfig)
 - [Passing Data](#passing-data)
   - [Encoded JSON (recommended)](#encoded-json-recommended)
   - [Minified JSON](#minified-json-less-reliable)
@@ -46,22 +47,26 @@ Install the CLI globally on your machine with:
 npm install -g faber-cli
 ```
 
+### Demo
+
+For having a quick demonstration of how Faber is used, try the [faber-demo](https://github.com/faberjs/faber-demo) example repository.
+
 ### Usage
 
-Here is a quick overview of how to use Faber on your projects:
+Before diving into details, here is a quick overview of how you can use Faber on your projects:
 
 If you want to **prepare a boilerplate** for using Faber:
 
 1. Create a [faberconfig](#configuring-faberconfig) file at the root of your boilerplate repository;
 2. Write the [actions](#actions) to be executed on the boilerplate when creating a new project with it;
 3. Prepare the [data](#passing-data) you want to use in your actions;
-4. Test your actions with the [execute](#faber-execute) CLI command.
+4. Test your actions with the [`faber execute`](#faber-execute) CLI command.
 
 If you want to **use an existing boilerplate** to create a new project:
 
 1. Prepare the [data](#passing-data) you want to use for your project as a minified JSON;
 2. Choose a repository of a boilerplate to use as a template;
-3. Use the [create](`faber-create`) CLI command to bootstrap a new project.
+3. Use the [`faber create`](#faber-create) CLI command to bootstrap a new project.
 
 ### Configuring `faberconfig`
 

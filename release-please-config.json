@@ -9,5 +9,6 @@
 			"extra-files": ["src/index.js"]
 		}
 	},
-	"changelog-path": "CHANGELOG.md"
+	"changelog-path": "CHANGELOG.md",
+	"draft": true
 }

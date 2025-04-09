@@ -1,13 +1,35 @@
 {
 	"name": "faber-cli",
 	"version": "0.1.0",
-	"description": "",
-	"exports": "./src/index.js",
-	"node": ">=14.16",
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"description": "A CLI to easily reuse your own configurable boilerplate projects.",
+	"homepage": "https://www.faberjs.com/",
+	"keywords": [
+		"cli",
+		"scaffolding",
+		"task-manager",
+		"automation",
+		"make",
+		"build",
+		"generate",
+		"faber"
+	],
+	"author": "André Ferraz <hello@andreferraz.dev> (https://www.andreferraz.dev)",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/faberjs/faber-cli"
+	},
+	"bugs": "https://github.com/faberjs/faber-cli/issues",
+	"files": [
+		"src"
+	],
 	"type": "module",
+	"engines": {
+		"node": ">=16"
+	},
+	"bin": {
+		"faber": "src/index.js"
+	},
 	"scripts": {
 		"test": "echo \"There are no tests to run\" && exit 0"
 	},
@@ -23,8 +45,5 @@
 		"move-file": "^3.1.0",
 		"replace-in-file": "^6.3.5",
 		"shelljs": "^0.8.5"
-	},
-	"bin": {
-		"faber": "src/index.js"
 	}
 }

@@ -41,7 +41,6 @@
 		"home-dir": "^1.0.0",
 		"inquirer": "^9.1.4",
 		"joi": "^17.11.0",
-		"jsonpack": "^1.1.5",
 		"move-file": "^3.1.0",
 		"replace-in-file": "^6.3.5",
 		"shelljs": "^0.8.5"

@@ -555,7 +555,7 @@ Here is a quick example on how to do it in a repository with Git initialized:
 2. Stage your changes with `git add .`, or specifying which files to add;
 3. Run `faber execute` to run your configured actions;
 4. Run `git diff` to compare what your actions has changed (or use your favorite visual tool 😉);
-5. Undo your actions' changes with `git clean -fd`;
+5. Undo your actions' changes with `git clean -fd` (which discards unstaged changes and folders);
 
 ### `faber ls`
 

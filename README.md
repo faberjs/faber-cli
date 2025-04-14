@@ -495,6 +495,7 @@ $ faber create my-project https://github.com/path/example.git --branch main --us
 - `--override-existing` (bool) – If the folder already exists, skip the prompt and delete the existing folder before cloning the repository.
 - `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, the default branch is used.
 - `--keep-git` (bool) – Prevent deleting the existing Git history from the new cloned folder, removed by default.
+- `--keep-config` (bool) – Prevent deleting the `faberconfig` file from the new cloned folder, removed by default.
 
 Also includes all flags available to the `faber execute` command:
 
@@ -508,6 +509,7 @@ Also includes all flags available to the `faber execute` command:
 1. Clones the boilerplate repository in the current directory into a new folder with the provided name.
 2. Run the steps from the `faber execute` command.
 3. Deletes the `.git` folder from the repository (when not using the `--keep-git` flag);
+4. Deletes the `faberconfig.*` file (when not using the `--keep-config` flag);
 
 > **Notice**: You need to have permission to read from the boilerplate repository. When using private repositories, you need to authenticate via SSH or HTTPS as you normally would when cloning.
 

@@ -188,6 +188,11 @@ export async function handleExecCommand(options) {
 		);
 		printActionResults(results);
 	}
+
+	return {
+		results,
+		configFile,
+	};
 }
 
 /**
@@ -294,10 +299,14 @@ export async function handleCreateCommand(name, repositoryUrl, options) {
 		console.error(error);
 	}
 
-	// Continue with the `run` command
+	// Continue with the `execute` command
 	shell.cd(name);
 	process.env.ROOT_DIRECTORY = process.cwd();
-	await handleExecCommand(options);
+	const { configFile } = await handleExecCommand(options);
+
+	if (!options.keepConfig) {
+		existsSync(configFile) && shell.rm('-rf', configFile);
+	}
 }
 
 const addArgs = '<alias> <clone_url> [name]';

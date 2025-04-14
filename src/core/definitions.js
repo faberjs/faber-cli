@@ -52,6 +52,12 @@ export const Commands = [
 					'Prevent deleting the existing Git history from the new cloned folder, removed by default.',
 				type: 'boolean',
 			},
+			{
+				name: 'keep-config',
+				description:
+					'Prevent deleting the `faberconfig` file from the new cloned folder, removed by default.',
+				type: 'boolean',
+			},
 		],
 		handler: handleCreateCommand,
 	},

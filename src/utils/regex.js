@@ -1,4 +1,11 @@
 /**
+ * Escape regex special characters in a string.
+ */
+export function escapeRegExpString(str) {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+/**
  * Add optional space around the given regular expression.
  *
  * @param {string} expression The regular expression string to add optional space around.

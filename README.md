@@ -212,21 +212,20 @@ Replaces text or patterns on files or glob patterns.
 ```js
 faber.setActions((data) => {
   return [
-    // Replace first occurrence of a string in single file.
+    // Replace all occurrences of a string in single file.
     {
       type: 'replace',
       files: 'README.md',
       from: 'PROJECT_NAME',
       to: data.projectName,
     },
-    // Replace all occurrences of multiple strings
-    // in multiple files, using glob patterns,
-    // and defining paths not to change.
+    // Replace occurrences of multiple strings in multiple files,
+    // using glob patterns, and defining paths to ignore.
     {
       type: 'replace',
       files: ['README.md', 'package.json', 'src/*'],
       ignore: ['src/node_modules', '.git'],
-      from: [/AUTHOR_NAME/g, /AUTHOR_URI/g],
+      from: [/\bAUTHOR_NAME\b/g, /\bAUTHOR_URI\b/g],
       to: [data.authorName, data.authorUri],
     },
   ];
@@ -235,8 +234,7 @@ faber.setActions((data) => {
 
 #### Considerations
 
-- By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regular expression with the global flag (like `/something/g`).
-- Consider using **regex boundaries** for more precise replacements, like `/\bNAME\b/g`. This prevents matching strings like `COAUTHOR` when looking for just `AUTHOR`.
+- When passing `string` in the `from` property, it's automatically converted to a **global regex** to replace all occurrences instead of just the first one ([JavaScript default](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#:~:text=If%20pattern%20is%20a%20string,first%20occurrence%20will%20be%20replaced.)). However, if a `RegExp` is passed, it is left unchanged, requiring the `g` flag to replace all occurrences (if wanted).
 - This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit its documentation.
 
 ### Move (or Rename)

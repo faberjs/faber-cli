@@ -212,21 +212,20 @@ Replaces text or patterns on files or glob patterns.
 ```js
 faber.setActions((data) => {
   return [
-    // Replace first occurrence of a string in single file.
+    // Replace all occurrences of a string in single file.
     {
       type: 'replace',
       files: 'README.md',
       from: 'PROJECT_NAME',
       to: data.projectName,
     },
-    // Replace all occurrences of multiple strings
-    // in multiple files, using glob patterns,
-    // and defining paths not to change.
+    // Replace occurrences of multiple strings in multiple files,
+    // using glob patterns, and defining paths to ignore.
     {
       type: 'replace',
       files: ['README.md', 'package.json', 'src/*'],
       ignore: ['src/node_modules', '.git'],
-      from: [/AUTHOR_NAME/g, /AUTHOR_URI/g],
+      from: [/\bAUTHOR_NAME\b/g, /\bAUTHOR_URI\b/g],
       to: [data.authorName, data.authorUri],
     },
   ];
@@ -235,8 +234,7 @@ faber.setActions((data) => {
 
 #### Considerations
 
-- By default, the `.replace()` function on JavaScript replaces only the **first occurrence** of a searched string. To replace all occurrences you should use a regular expression with the global flag (like `/something/g`).
-- Consider using **regex boundaries** for more precise replacements, like `/\bNAME\b/g`. This prevents matching strings like `COAUTHOR` when looking for just `AUTHOR`.
+- When passing `string` in the `from` property, it's automatically converted to a **global regex** to replace all occurrences instead of just the first one ([JavaScript default](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#:~:text=If%20pattern%20is%20a%20string,first%20occurrence%20will%20be%20replaced.)). However, if a `RegExp` is passed, it is left unchanged, requiring the `g` flag to replace all occurrences (if wanted).
 - This action uses the [replace-in-file](https://www.npmjs.com/package/replace-in-file) package for the replacements. For more details about the `from`, `to` and `ignore` parameters, please visit its documentation.
 
 ### Move (or Rename)
@@ -495,6 +493,7 @@ $ faber create my-project https://github.com/path/example.git --branch main --us
 - `--override-existing` (bool) – If the folder already exists, skip the prompt and delete the existing folder before cloning the repository.
 - `--branch` (string) – Name of the git branch to retrieve from the repository. If not defined, the default branch is used.
 - `--keep-git` (bool) – Prevent deleting the existing Git history from the new cloned folder, removed by default.
+- `--keep-config` (bool) – Prevent deleting the `faberconfig` file from the new cloned folder, removed by default.
 
 Also includes all flags available to the `faber execute` command:
 
@@ -508,6 +507,7 @@ Also includes all flags available to the `faber execute` command:
 1. Clones the boilerplate repository in the current directory into a new folder with the provided name.
 2. Run the steps from the `faber execute` command.
 3. Deletes the `.git` folder from the repository (when not using the `--keep-git` flag);
+4. Deletes the `faberconfig.*` file (when not using the `--keep-config` flag);
 
 > **Notice**: You need to have permission to read from the boilerplate repository. When using private repositories, you need to authenticate via SSH or HTTPS as you normally would when cloning.
 
@@ -555,7 +555,7 @@ Here is a quick example on how to do it in a repository with Git initialized:
 2. Stage your changes with `git add .`, or specifying which files to add;
 3. Run `faber execute` to run your configured actions;
 4. Run `git diff` to compare what your actions has changed (or use your favorite visual tool 😉);
-5. Undo your actions' changes with `git clean -fd`;
+5. Undo your actions with `git restore --worktree . && git clean -fd` (which will revert, or delete, unstaged and untracked files and folders);
 
 ### `faber ls`
 

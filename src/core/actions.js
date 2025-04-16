@@ -6,7 +6,10 @@ import { deleteAsync } from 'del';
 import { moveFile } from 'move-file';
 import { getRelativePath, getAbsolutePath } from '../utils/files.js';
 import { printMsg } from '../utils/ui.js';
-import { getConditionalCommentPatterns } from '../utils/regex.js';
+import {
+	escapeRegExpString,
+	getConditionalCommentPatterns,
+} from '../utils/regex.js';
 
 export async function runActions(actions) {
 	return new Promise(async (resolve, reject) => {
@@ -168,10 +171,19 @@ export async function runActions(actions) {
 }
 
 async function runReplacements(files, ignore, from, to) {
+	const toRegexp = (value) =>
+		typeof value === 'string'
+			? new RegExp(escapeRegExpString(value), 'g')
+			: value;
+
+	const convertedFrom = Array.isArray(from)
+		? from.map(toRegexp)
+		: toRegexp(from);
+
 	return await replace({
 		files,
 		ignore,
-		from,
+		from: convertedFrom,
 		to,
 		countMatches: true,
 	});

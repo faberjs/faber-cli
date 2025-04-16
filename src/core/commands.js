@@ -28,6 +28,7 @@ import {
 	askActionWithExistingFolder,
 } from './prompts.js';
 import { existsSync } from 'fs';
+import { addBoilerplateMessage } from '../utils/constants.js';
 
 /**
  * Handles the `execute` command.
@@ -187,6 +188,11 @@ export async function handleExecCommand(options) {
 		);
 		printActionResults(results);
 	}
+
+	return {
+		results,
+		configFile,
+	};
 }
 
 /**
@@ -246,6 +252,16 @@ export async function handleCreateCommand(name, repositoryUrl, options) {
 
 			if (!cloneUrl) {
 				const boilerplates = await getBoilerplates();
+
+				if (!boilerplates.length) {
+					printMsg(
+						`No boilerplate provided or configured. Provide one, or create an alias.\n`,
+						'warn'
+					);
+					printMsg(addBoilerplateMessage, 'info', '');
+					return;
+				}
+
 				const { boilerplate } = await askBoilerplateChoice(boilerplates);
 				cloneUrl = boilerplate.repo;
 			}
@@ -283,10 +299,14 @@ export async function handleCreateCommand(name, repositoryUrl, options) {
 		console.error(error);
 	}
 
-	// Continue with the `run` command
+	// Continue with the `execute` command
 	shell.cd(name);
 	process.env.ROOT_DIRECTORY = process.cwd();
-	await handleExecCommand(options);
+	const { configFile } = await handleExecCommand(options);
+
+	if (!options.keepConfig) {
+		existsSync(configFile) && shell.rm('-rf', configFile);
+	}
 }
 
 const addArgs = '<alias> <clone_url> [name]';
@@ -355,13 +375,7 @@ export async function handleListCommand() {
 		const boilerplates = await getBoilerplates();
 		if (!boilerplates.length) {
 			printMsg('There are no boilerplates to list\n', 'warn');
-			printMsg(
-				`Tip: You can add a boilerplate with: \n${colors.cyan(
-					`faber add ` + addArgs
-				)}\n`,
-				'info',
-				''
-			);
+			printMsg(addBoilerplateMessage, 'info', '');
 			return;
 		}
 

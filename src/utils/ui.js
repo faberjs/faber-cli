@@ -5,6 +5,7 @@ import colors from 'colors';
  * Prints a message to the console.
  * @param {string} msg The message to print.
  * @param {string} [type=''] The type of message. Can be 'success', 'warn', 'error', 'muted' or '' (default).
+ * @param {string} [symbol='!'] The symbol to prepend to the message. Default is '!'.
  */
 export function printMsg(msg, type = '', symbol = '!') {
 	let message = msg.replace(/\*([^\b ].*?[^\b ])\*/g, colors.bold('$1')); // Bold with *text*

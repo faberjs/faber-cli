@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/faberjs/faber-cli/compare/v0.1.0...v0.2.0) (2025-04-16)
+
+
+### Features
+
+* **actions:** change `replace` action to replace all occurrences when passing string ([3fecf29](https://github.com/faberjs/faber-cli/commit/3fecf296c0aafbb1a26934e4f4a8c89d73fa8465))
+* **commands:** delete faberconfig file in the `faber create` command, and add `--keep-config` option ([d3d8b1d](https://github.com/faberjs/faber-cli/commit/d3d8b1d17b15baa1669f66850edd38330c2986af))
+
+
+### Bug Fixes
+
+* **cli:** add error handler to `faber create` without a provided or configured boilerplate ([8994085](https://github.com/faberjs/faber-cli/commit/8994085a26a84d09d99c1b23c2c3444735daba45))
+
 ## [0.1.0](https://github.com/faberjs/faber-cli/compare/v0.0.3...v0.1.0) (2025-04-08)
 
 
